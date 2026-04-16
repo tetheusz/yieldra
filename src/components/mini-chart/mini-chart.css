@@ -1,0 +1,78 @@
+/* ============================================
+   MINI CHART COMPONENT
+   Lightweight SVG charts
+   ============================================ */
+
+.mini-chart {
+  position: relative;
+  width: 100%;
+}
+
+.mini-chart__svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.mini-chart__area {
+  transition: d var(--duration-slow) var(--ease-out);
+}
+
+.mini-chart__line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.mini-chart__line--accent {
+  stroke: var(--accent);
+}
+
+.mini-chart__area--accent {
+  fill: url(#chart-gradient-accent);
+}
+
+.mini-chart__line--success {
+  stroke: var(--status-success);
+}
+
+.mini-chart__area--success {
+  fill: url(#chart-gradient-success);
+}
+
+/* ── Tooltip ── */
+.mini-chart__tooltip {
+  position: absolute;
+  background-color: var(--color-slate-900);
+  color: var(--text-inverse);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.mini-chart:hover .mini-chart__tooltip {
+  opacity: 1;
+}
+
+/* ── Sparkline (minimal) ── */
+.mini-chart--sparkline {
+  height: 40px;
+}
+
+/* ── Area chart ── */
+.mini-chart--area {
+  height: 200px;
+}
+
+/* ── Bar ── */
+.mini-chart__bar {
+  transition: height var(--duration-normal) var(--ease-out);
+}

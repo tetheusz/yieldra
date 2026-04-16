@@ -1,0 +1,301 @@
+/* ============================================
+   TOPBAR COMPONENT
+   ============================================ */
+
+.topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6);
+  height: var(--topbar-height);
+  background-color: var(--surface-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  z-index: 30;
+}
+
+.topbar__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.topbar__menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  transition: var(--transition-colors);
+}
+
+.topbar__menu-btn:hover {
+  background-color: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.topbar__menu-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.topbar__breadcrumb {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.topbar__breadcrumb-current {
+  color: var(--text-primary);
+  font-weight: var(--font-medium);
+}
+
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* ── Network Badge ── */
+.topbar__network {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5);
+  padding: var(--space-1) var(--space-2-5);
+  background-color: var(--surface-muted);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+}
+
+.topbar__network-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background-color: var(--status-success);
+}
+
+/* ── Account ── */
+.topbar__account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.topbar__account:hover {
+  background-color: var(--surface-muted);
+}
+
+.topbar__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--accent), var(--color-accent-300));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-2xs);
+  font-weight: var(--font-bold);
+  color: var(--text-inverse);
+}
+
+.topbar__address {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+/* ── Connect Button ── */
+.topbar__connect-btn {
+  padding: var(--space-1-5) var(--space-4);
+  background: var(--accent);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.topbar__connect-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.topbar__connect-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Autopilot Status ── */
+.topbar__autopilot-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5);
+  padding: var(--space-1) var(--space-2-5);
+  background-color: var(--surface-muted);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+}
+
+.topbar__autopilot-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+}
+
+.topbar__autopilot-dot--active {
+  background-color: var(--status-success);
+  animation: pulse 2s var(--ease-in-out) infinite;
+}
+
+.topbar__autopilot-dot--paused {
+  background-color: var(--color-slate-400);
+}
+
+.topbar__autopilot-label {
+  color: var(--text-secondary);
+}
+
+/* ── Notifications ── */
+.topbar__notif-wrap {
+  position: relative;
+}
+
+.topbar__notif-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  transition: var(--transition-colors);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.topbar__notif-btn:hover {
+  background-color: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.topbar__notif-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.topbar__notif-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background: var(--status-danger);
+  color: var(--text-inverse);
+  font-size: 9px;
+  font-weight: var(--font-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.topbar__notif-dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  width: 340px;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  z-index: 100;
+  overflow: hidden;
+  animation: fadeIn var(--duration-fast) var(--ease-out);
+}
+
+.topbar__notif-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.topbar__notif-count {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--text-tertiary);
+}
+
+.topbar__notif-item {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.topbar__notif-item:hover {
+  background-color: var(--surface-muted);
+}
+
+.topbar__notif-item--unread {
+  border-left: 3px solid var(--accent);
+}
+
+.topbar__notif-item--warning {
+  border-left-color: var(--status-warning);
+}
+
+.topbar__notif-item--critical {
+  border-left-color: var(--status-danger);
+}
+
+.topbar__notif-msg {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  line-height: var(--leading-snug);
+}
+
+.topbar__notif-time {
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+}
+
+.topbar__notif-viewall {
+  display: block;
+  width: 100%;
+  padding: var(--space-3);
+  text-align: center;
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.topbar__notif-viewall:hover {
+  background-color: var(--surface-muted);
+}
+

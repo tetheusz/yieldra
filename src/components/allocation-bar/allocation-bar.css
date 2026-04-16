@@ -1,0 +1,90 @@
+/* ============================================
+   ALLOCATION BAR COMPONENT
+   Segmented bar showing distribution
+   ============================================ */
+
+.allocation-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.allocation-bar__track {
+  display: flex;
+  height: 8px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background-color: var(--surface-muted);
+}
+
+.allocation-bar__segment {
+  height: 100%;
+  transition: width var(--duration-slow) var(--ease-out);
+  position: relative;
+}
+
+.allocation-bar__segment:first-child {
+  border-radius: var(--radius-full) 0 0 var(--radius-full);
+}
+
+.allocation-bar__segment:last-child {
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+}
+
+.allocation-bar__segment:only-child {
+  border-radius: var(--radius-full);
+}
+
+/* ── Segment colors ── */
+.allocation-bar__segment--primary { background-color: var(--accent); }
+.allocation-bar__segment--secondary { background-color: var(--color-accent-300); }
+.allocation-bar__segment--tertiary { background-color: var(--color-accent-200); }
+.allocation-bar__segment--muted { background-color: var(--color-slate-300); }
+.allocation-bar__segment--success { background-color: var(--status-success); }
+.allocation-bar__segment--warning { background-color: var(--status-warning); }
+.allocation-bar__segment--danger { background-color: var(--status-danger); }
+
+/* ── Legend ── */
+.allocation-bar__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.allocation-bar__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.allocation-bar__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.allocation-bar__legend-value {
+  font-family: var(--font-mono);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+/* ── Vertical variant ── */
+.allocation-bar--vertical .allocation-bar__track {
+  flex-direction: column;
+  height: auto;
+  width: 8px;
+}
+
+.allocation-bar--vertical .allocation-bar__segment {
+  width: 100%;
+  height: auto;
+}
+
+/* ── Large track ── */
+.allocation-bar--large .allocation-bar__track {
+  height: 12px;
+}

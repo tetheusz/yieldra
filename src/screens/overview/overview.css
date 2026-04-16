@@ -1,0 +1,134 @@
+/* Overview Screen */
+.overview-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--panel-gap);
+}
+
+.overview-chart-section {
+  margin-top: var(--space-6);
+}
+
+.overview-allocation {
+  margin-top: var(--space-6);
+}
+
+.overview-activity {
+  margin-top: var(--space-6);
+}
+
+.overview-activity__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+}
+
+.activity-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2-5) var(--space-3);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.activity-row:hover {
+  background-color: var(--surface-muted);
+}
+
+.activity-row__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: var(--text-sm);
+}
+
+.activity-row__icon--rebalance { background-color: var(--accent-subtle); color: var(--accent); }
+.activity-row__icon--payment { background-color: var(--status-success-subtle); color: var(--status-success); }
+.activity-row__icon--harvest { background-color: var(--status-warning-subtle); color: var(--status-warning); }
+.activity-row__icon--check { background-color: var(--status-neutral-subtle); color: var(--text-secondary); }
+.activity-row__icon--snapshot { background-color: var(--surface-muted); color: var(--text-tertiary); }
+.activity-row__icon--allocation { background-color: var(--accent-subtle); color: var(--accent); }
+
+.activity-row__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-row__action {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.activity-row__time {
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+/* ── Autopilot status widget in overview ── */
+.autopilot-mini {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.autopilot-mini__indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background-color: var(--status-success);
+  animation: pulse 2s var(--ease-in-out) infinite;
+}
+
+.autopilot-mini__label {
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
+  color: var(--status-success);
+}
+
+@media (max-width: 1024px) {
+  .overview-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .overview-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Autopilot mini-widget ── */
+.overview-autopilot-label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.overview-autopilot-sub {
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+  display: block;
+}
+
+/* ── Right rail sections ── */
+.overview-rail-section {
+  margin-top: var(--space-8);
+}
+
+.overview-rail-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+

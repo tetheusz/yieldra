@@ -1,0 +1,212 @@
+/* Autopilot Screen */
+.autopilot-status-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--panel-gap);
+}
+
+.autopilot-status-display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.autopilot-status-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.autopilot-status-info__sub {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.autopilot-perf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+/* ── Rail info blocks ── */
+.rail-info-blocks {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.rail-info-blocks__title {
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.autopilot-toggle {
+  width: 56px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  position: relative;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.autopilot-toggle--on {
+  background-color: var(--status-success);
+}
+
+.autopilot-toggle--off {
+  background-color: var(--color-slate-300);
+}
+
+.autopilot-toggle__knob {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-white);
+  position: absolute;
+  top: 3px;
+  transition: left var(--duration-fast) var(--ease-out);
+  box-shadow: var(--shadow-sm);
+}
+
+.autopilot-toggle--on .autopilot-toggle__knob {
+  left: 29px;
+}
+
+.autopilot-toggle--off .autopilot-toggle__knob {
+  left: 3px;
+}
+
+.autopilot-distribution {
+  margin-top: var(--space-6);
+}
+
+.distribution-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.distribution-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.distribution-row__label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  min-width: 120px;
+}
+
+.distribution-row__bar {
+  flex: 1;
+}
+
+.distribution-row__value {
+  font-family: var(--font-mono);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  min-width: 40px;
+  text-align: right;
+}
+
+.autopilot-log {
+  margin-top: var(--space-6);
+}
+
+.log-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.log-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2-5) var(--space-3);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.log-entry:hover {
+  background-color: var(--surface-muted);
+}
+
+.log-entry__time {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+  min-width: 80px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.log-entry__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.log-entry__dot--rebalance { background-color: var(--accent); }
+.log-entry__dot--payment { background-color: var(--status-success); }
+.log-entry__dot--harvest { background-color: var(--status-warning); }
+.log-entry__dot--check { background-color: var(--color-slate-400); }
+.log-entry__dot--snapshot { background-color: var(--color-slate-300); }
+.log-entry__dot--allocation { background-color: var(--accent); }
+
+.log-entry__action {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  line-height: var(--leading-snug);
+}
+
+.autopilot-config {
+  margin-top: var(--space-6);
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.config-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2-5) var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.config-item__label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.config-item__value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .autopilot-status-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
+}

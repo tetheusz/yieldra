@@ -1,0 +1,9 @@
+# Query: Arc Points
+# ContextLines: 1
+
+1 result - 1 file
+
+src\components\sidebar\Sidebar.tsx:
+  80          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', cursor: 'not-allowed', border: '1px dashed rgba(255,255,255,0.1)' }}>
+  81:           <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Arc Points</span>
+  82            <span style={{ fontSize: '10px', background: 'var(--accent-hover)', color: 'black', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>soon</span>

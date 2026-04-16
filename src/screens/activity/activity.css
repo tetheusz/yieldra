@@ -1,0 +1,55 @@
+/* Activity Screen */
+.activity-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.activity-filter-btn {
+  padding: var(--space-1-5) var(--space-3);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.activity-filter-btn:hover {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.activity-filter-btn.is-active {
+  background: var(--accent-subtle);
+  border-color: var(--border-accent);
+  color: var(--accent);
+}
+
+/* Icons */
+.activity-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  margin-right: var(--space-2);
+}
+
+.activity-icon--rebalance { background-color: var(--accent-subtle); color: var(--accent); }
+.activity-icon--payment { background-color: var(--status-success-subtle); color: var(--status-success); }
+.activity-icon--harvest { background-color: var(--status-warning-subtle); color: var(--status-warning); }
+.activity-icon--check { background-color: var(--surface-muted); color: var(--text-secondary); }
+.activity-icon--snapshot { background-color: var(--surface-muted); color: var(--text-tertiary); }
+.activity-icon--allocation { background-color: var(--accent-subtle); color: var(--accent); }
+
+.activity-row-action {
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}

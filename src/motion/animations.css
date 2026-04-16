@@ -1,0 +1,155 @@
+/* ============================================
+   ANIMATION KEYFRAMES
+   Entry and state animations
+   ============================================ */
+
+/* ── Screen section entrance (staggered) ── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Sidebar slide ── */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── Subtle pulse for live indicators ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── Number count up glow ── */
+@keyframes numberGlow {
+  0% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* ── Progress ring fill ── */
+@keyframes ringFill {
+  from { stroke-dashoffset: var(--ring-circumference); }
+  to { stroke-dashoffset: var(--ring-target); }
+}
+
+/* ── Fade in ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Utility classes ── */
+.animate-fade-in-up {
+  animation: fadeInUp var(--duration-slow) var(--ease-out) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--duration-normal) var(--ease-out) both;
+}
+
+.animate-pulse {
+  animation: pulse 2s var(--ease-in-out) infinite;
+}
+
+/* ── Stagger delays for section entrance ── */
+.stagger-1 { animation-delay: 0ms; }
+.stagger-2 { animation-delay: 60ms; }
+.stagger-3 { animation-delay: 120ms; }
+.stagger-4 { animation-delay: 180ms; }
+.stagger-5 { animation-delay: 240ms; }
+.stagger-6 { animation-delay: 300ms; }
+.stagger-7 { animation-delay: 360ms; }
+.stagger-8 { animation-delay: 420ms; }
+
+/* ── Value flash (when a number updates) ── */
+@keyframes valueFlash {
+  0% { color: var(--accent); }
+  100% { color: inherit; }
+}
+
+.value-updated {
+  animation: valueFlash 0.8s var(--ease-out);
+}
+
+/* ── Shimmer loading state ── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--surface-muted) 25%,
+    var(--surface-secondary) 50%,
+    var(--surface-muted) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s var(--ease-linear) infinite;
+}
+
+/* ── Scale in (for modals, dropdowns) ── */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--duration-fast) var(--ease-spring) both;
+}
+
+/* ── Slide down (for dropdowns) ── */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown var(--duration-fast) var(--ease-out) both;
+}
+
+/* ── Spin (for loading) ── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s var(--ease-linear) infinite;
+}
+
+/* ── Glow pulse (for active indicators) ── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(45, 90, 123, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(45, 90, 123, 0); }
+}
+
+.animate-glow {
+  animation: glowPulse 2s var(--ease-in-out) infinite;
+}
+

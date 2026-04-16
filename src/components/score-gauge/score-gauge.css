@@ -1,0 +1,95 @@
+/* ============================================
+   SCORE GAUGE COMPONENT
+   SVG ring gauge for scores/percentages
+   ============================================ */
+
+.score-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.score-gauge__ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-gauge__svg {
+  transform: rotate(-90deg);
+}
+
+.score-gauge__track {
+  fill: none;
+  stroke: var(--surface-muted);
+  stroke-linecap: round;
+}
+
+.score-gauge__fill {
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--duration-slower) var(--ease-out);
+}
+
+.score-gauge__fill--excellent {
+  stroke: var(--status-success);
+}
+
+.score-gauge__fill--good {
+  stroke: var(--accent);
+}
+
+.score-gauge__fill--fair {
+  stroke: var(--status-warning);
+}
+
+.score-gauge__fill--poor {
+  stroke: var(--status-danger);
+}
+
+.score-gauge__center {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-0-5);
+}
+
+.score-gauge__value {
+  font-family: var(--font-mono);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--leading-none);
+}
+
+.score-gauge__grade {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+}
+
+.score-gauge__grade--excellent { color: var(--status-success); }
+.score-gauge__grade--good { color: var(--accent); }
+.score-gauge__grade--fair { color: var(--status-warning); }
+.score-gauge__grade--poor { color: var(--status-danger); }
+
+/* ── Large variant ── */
+.score-gauge--large .score-gauge__value {
+  font-size: var(--text-4xl);
+}
+
+/* ── Small variant ── */
+.score-gauge--small .score-gauge__value {
+  font-size: var(--text-xl);
+}
+
+/* ── Label ── */
+.score-gauge__label {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  text-align: center;
+}

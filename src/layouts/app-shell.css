@@ -1,0 +1,81 @@
+/* ============================================
+   APP SHELL LAYOUT
+   Sidebar + Topbar + Main + Rail
+   ============================================ */
+
+.app-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-rows: var(--topbar-height) 1fr;
+  grid-template-areas:
+    "sidebar topbar"
+    "sidebar main";
+  min-height: 100vh;
+  background-color: var(--surface-page);
+}
+
+/* ── Main Content Area ── */
+.app-main {
+  grid-area: main;
+  display: flex;
+  gap: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: calc(100vh - var(--topbar-height));
+}
+
+.app-main__content {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-6);
+  overflow-y: auto;
+}
+
+.app-main__rail {
+  width: var(--rail-width);
+  flex-shrink: 0;
+  border-left: 1px solid var(--border-subtle);
+  padding: var(--space-6);
+  overflow-y: auto;
+  background-color: var(--surface-sunken);
+}
+
+/* ── Screen container ── */
+#screen-container {
+  transition: opacity var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+  will-change: opacity, transform;
+}
+
+/* ── Screen Header ── */
+.screen-header {
+  margin-bottom: var(--space-6);
+}
+
+.screen-header__title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  letter-spacing: var(--tracking-tight);
+}
+
+.screen-header__subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-top: var(--space-1);
+}
+
+/* ── Mobile overlay ── */
+.app-shell__overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: var(--surface-overlay);
+  z-index: 40;
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+.app-shell__overlay.is-visible {
+  opacity: 1;
+}

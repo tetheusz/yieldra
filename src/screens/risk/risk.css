@@ -1,0 +1,179 @@
+/* Risk Screen */
+.risk-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--panel-gap);
+}
+
+.risk-level-display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.risk-level-indicator {
+  font-family: var(--font-mono);
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-none);
+}
+
+.risk-level-indicator--low { color: var(--status-success); }
+.risk-level-indicator--medium { color: var(--status-warning); }
+.risk-level-indicator--high { color: var(--status-danger); }
+.risk-level-indicator--critical { color: var(--status-danger); }
+
+.risk-level-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.risk-level-label {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.risk-level-label--low { color: var(--status-success); }
+.risk-level-label--medium { color: var(--status-warning); }
+.risk-level-label--high { color: var(--status-danger); }
+
+.risk-level-desc {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.risk-alerts {
+  margin-top: var(--space-6);
+}
+
+.risk-exposure {
+  margin-top: var(--space-6);
+}
+
+.exposure-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.exposure-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-5);
+}
+
+.exposure-row__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.exposure-row__label {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.exposure-row__values {
+  display: flex;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.exposure-row__risk {
+  font-family: var(--font-mono);
+  font-weight: var(--font-medium);
+}
+
+.risk-concentration {
+  margin-top: var(--space-6);
+}
+
+.concentration-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.concentration-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-5);
+}
+
+.concentration-item__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.concentration-item__label {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.concentration-item__pct {
+  font-family: var(--font-mono);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+/* ── Risk Thresholds (rail) ── */
+.risk-thresholds {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.risk-thresholds__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.risk-thresholds__label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.risk-thresholds__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.risk-thresholds__value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.risk-thresholds__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+}
+
+.risk-thresholds__dot--success {
+  background-color: var(--status-success);
+}
+
+.risk-thresholds__dot--danger {
+  background-color: var(--status-danger);
+}
+
+@media (max-width: 768px) {
+  .risk-hero {
+    grid-template-columns: 1fr;
+  }
+}

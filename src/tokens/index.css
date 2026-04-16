@@ -1,0 +1,7 @@
+/* Token Index — imports all token files */
+@import './colors.css';
+@import './typography.css';
+@import './spacing.css';
+@import './elevation.css';
+@import './radius.css';
+@import './dark.css';

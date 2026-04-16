@@ -1,0 +1,43 @@
+/* ============================================
+   DARK MODE OVERRIDES
+   ============================================ */
+
+.theme-dark {
+  /* ── Semantic: Surfaces ── */
+  --surface-page: var(--color-slate-950);
+  --surface-primary: var(--color-slate-900);
+  --surface-elevated: var(--color-slate-800);
+  --surface-muted: var(--color-slate-800);
+  --surface-sunken: var(--color-black);
+  --surface-overlay: rgba(0, 0, 0, 0.7);
+
+  /* ── Semantic: Text ── */
+  --text-primary: var(--color-slate-50);
+  --text-secondary: var(--color-slate-300);
+  --text-tertiary: var(--color-slate-500);
+  --text-inverse: var(--color-slate-900);
+  --text-accent: var(--color-accent-300);
+
+  /* ── Semantic: Accent ── */
+  --accent: var(--color-accent-400);
+  --accent-hover: var(--color-accent-300);
+  --accent-active: var(--color-accent-200);
+  --accent-subtle: var(--color-accent-900);
+  --accent-muted: var(--color-accent-800);
+
+  /* ── Semantic: Status ── */
+  --status-success: var(--color-success-400);
+  --status-success-subtle: rgba(15, 118, 110, 0.3);
+  --status-warning: var(--color-warning-400);
+  --status-warning-subtle: rgba(217, 119, 6, 0.3);
+  --status-danger: var(--color-danger-400);
+  --status-danger-subtle: rgba(220, 38, 38, 0.3);
+  --status-neutral: var(--color-slate-400);
+  --status-neutral-subtle: var(--color-slate-800);
+
+  /* ── Semantic: Borders ── */
+  --border-default: var(--color-slate-700);
+  --border-subtle: var(--color-slate-800);
+  --border-strong: var(--color-slate-600);
+  --border-accent: var(--color-accent-700);
+}
