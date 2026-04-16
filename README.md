@@ -38,7 +38,7 @@ In a world where capital is often fragmented and credit is underutilized, Yieldr
 ### Prerequisites
 - Node.js (v18+)
 - MetaMask or any EIP-1193 compatible wallet
-- $ARC tokens (for gas) from the [Arc Faucet](https://faucet.testnet.arc.network)
+- $USDC tokens (for gas) from the [Arc Faucet](https://faucet.testnet.arc.network)
 
 ### Installation
 
