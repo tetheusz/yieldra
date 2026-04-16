@@ -405,6 +405,19 @@
       "type": "event"
     },
     {
+      "inputs": [],
+      "name": "REPUTATION_REGISTRY",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -519,6 +532,11 @@
         {
           "internalType": "uint256",
           "name": "_maxUnsecuredCredit",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_agentId",
           "type": "uint256"
         }
       ],
@@ -689,6 +707,19 @@
         {
           "internalType": "uint256",
           "name": "lastUpdated",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalPrincipal",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
           "type": "uint256"
         }
       ],
@@ -908,6 +939,19 @@
           "internalType": "contract IArcScoreRegistry",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalBorrowed",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",

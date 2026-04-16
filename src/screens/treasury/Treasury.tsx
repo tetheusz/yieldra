@@ -29,13 +29,13 @@ export function Treasury() {
       {/* Yield Metrics */}
       <div className="treasury-equity animate-fade-in-up stagger-2">
         <Panel variant="bordered">
-          <MetricDisplay label="Total Locked (Native" value={<LiveValue value={formatUSD(s.netWorth)} />} variant="compact" />
+          <MetricDisplay label="Total Protocol TVL" value={<LiveValue value={formatUSD(s.protocolTVL)} />} variant="compact" />
         </Panel>
         <Panel variant="bordered">
           <MetricDisplay label="Current Base APY" value={<span style={{ color: 'var(--status-success)' }}>5%</span>} variant="compact" />
         </Panel>
         <Panel variant="bordered">
-          <MetricDisplay label="Yield Earned" value={<LiveValue value={formatUSD(s.accumulatedYield)} />} variant="compact" />
+          <MetricDisplay label="Your Yield Earned" value={<LiveValue value={formatUSD(s.accumulatedYield)} />} variant="compact" />
         </Panel>
       </div>
 

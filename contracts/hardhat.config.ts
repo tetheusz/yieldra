@@ -16,6 +16,21 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     }
   },
+  etherscan: {
+    apiKey: {
+      arcTestnet: "your-api-key-if-any-or-dummy", 
+    },
+    customChains: [
+      {
+        network: "arcTestnet",
+        chainId: 5042002,
+        urls: {
+          apiURL: "https://testnet.arcscan.app/api",
+          browserURL: "https://testnet.arcscan.app"
+        }
+      }
+    ]
+  }
 };
 
 export default config;

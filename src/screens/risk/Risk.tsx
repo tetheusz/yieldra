@@ -18,8 +18,11 @@ export function Risk() {
   const s = useStore();
 
   useRightRail(<RiskRail />, []);
-
-  const riskScore = s.riskLevel === 'low' ? 1 : s.riskLevel === 'medium' ? 2 : s.riskLevel === 'high' ? 3 : 4;
+  
+  // Real dynamic risk assessment based on Protocol Utilization
+  const systemRisk = s.protocolUtilization > 80 ? 'critical' : s.protocolUtilization > 60 ? 'high' : s.protocolUtilization > 30 ? 'medium' : 'low';
+  const riskScore = systemRisk === 'low' ? 1 : systemRisk === 'medium' ? 2 : systemRisk === 'high' ? 3 : 4;
+  const healthGrade = s.healthFactor >= 3 ? 'Excellent' : s.healthFactor >= 2 ? 'Good' : s.healthFactor >= 1.5 ? 'Fair' : 'Poor';
 
   return (
     <>
@@ -31,12 +34,12 @@ export function Risk() {
 
       {/* Hero: Risk Level + Health Factor */}
       <div className="risk-hero animate-fade-in-up stagger-2">
-        <Panel variant="bordered" title="Overall Risk Level">
+        <Panel variant="bordered" title="Overall Protocol Risk">
           <div className="risk-level-display">
-            <div className={`risk-level-indicator risk-level-indicator--${s.riskLevel}`}>{riskScore}</div>
+            <div className={`risk-level-indicator risk-level-indicator--${systemRisk}`}>{riskScore}</div>
             <div className="risk-level-meta">
-              <span className={`risk-level-label risk-level-label--${s.riskLevel}`}>{s.riskLevel.toUpperCase()}</span>
-              <span className="risk-level-desc">{RISK_DESCRIPTIONS[s.riskLevel]}</span>
+              <span className={`risk-level-label risk-level-label--${systemRisk}`}>{systemRisk.toUpperCase()}</span>
+              <span className="risk-level-desc">Utilization Rate: {s.protocolUtilization.toFixed(1)}%</span>
             </div>
           </div>
         </Panel>
@@ -46,7 +49,7 @@ export function Risk() {
             <ScoreGauge
               score={s.healthFactor * 100}
               max={500}
-              grade={s.healthFactor >= 3 ? 'Excellent' : s.healthFactor >= 2 ? 'Good' : s.healthFactor >= 1.5 ? 'Fair' : 'Poor'}
+              grade={healthGrade}
               variant="large"
               label={`Health Factor: ${s.healthFactor.toFixed(1)}x`}
             />
@@ -65,26 +68,36 @@ export function Risk() {
         </Panel>
       </div>
 
-      {/* Exposure Breakdown */}
+      {/* Analytics Breakdown */}
       <div className="risk-exposure animate-fade-in-up stagger-4">
-        <Panel variant="bordered" title="Exposure by Strategy">
+        <Panel variant="bordered" title="System BalanceSheet (Verified)">
           <div className="exposure-list">
-            {s.exposureBreakdown.map((exp, i) => (
-              <div key={i} className="exposure-row">
+              <div className="exposure-row">
                 <div className="exposure-row__header">
-                  <span className="exposure-row__label">{exp.strategy}</span>
+                  <span className="exposure-row__label">Protocol TVL</span>
                   <div className="exposure-row__values">
-                    <span>Weight: <span className="exposure-row__risk">{exp.weight}%</span></span>
-                    <span>Risk: <span className="exposure-row__risk">{exp.risk}/100</span></span>
+                    <span>Value: <span className="exposure-row__risk">${s.protocolTVL.toFixed(2)}</span></span>
                   </div>
                 </div>
-                <ProgressBar
-                  value={exp.risk}
-                  color={exp.risk > 30 ? 'warning' : exp.risk > 60 ? 'danger' : 'accent'}
-                  height={6}
-                />
+                <ProgressBar value={100} color="accent" height={6} />
               </div>
-            ))}
+
+              <div className="exposure-row" style={{ marginTop: '16px' }}>
+                <div className="exposure-row__header">
+                  <span className="exposure-row__label">Credit Liquidity</span>
+                  <div className="exposure-row__values">
+                    <span>Available: <span className="exposure-row__risk">${s.creditManagerLiquidity.toFixed(2)}</span></span>
+                  </div>
+                </div>
+                <ProgressBar 
+                  value={(s.creditManagerLiquidity / s.protocolTVL) * 100 || 0} 
+                  color={s.creditManagerLiquidity < 10 ? 'danger' : 'success'} 
+                  height={6} 
+                />
+                {s.creditManagerLiquidity < 10 && (
+                  <p style={{ fontSize: '11px', color: 'var(--status-danger)', marginTop: '4px' }}>⚠ LOW LIQUIDITY DETECTED: Deposits are encouraged.</p>
+                )}
+              </div>
           </div>
         </Panel>
       </div>

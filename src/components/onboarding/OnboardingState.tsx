@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { useStoreDispatch, mockPopulatedState } from '../../state/store';
+import { useStoreDispatch, mockPopulatedState, useStore } from '../../state/store';
 import { useWallet } from '../../state/wallet';
 import { Panel } from '../panel/Panel';
 import { ethers } from 'ethers';
 
 export function OnboardingState() {
   const dispatch = useStoreDispatch();
+  const { state } = { state: useStore() }; // Access state
   const { wallet, connect } = useWallet();
   const [txState, setTxState] = useState<'idle' | 'preparing' | 'signing' | 'mining'>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -48,8 +49,22 @@ export function OnboardingState() {
       setTxState('mining');
       await depositTx.wait();
 
+      // 3. Register Agent Identity (ERC-8004) if not already done
+      const IDENTITY_REGISTRY = "0x8004A818BFB912233c491871b3d84c89A494BD9e";
+      if (state.agentId === '0') {
+        const identityContract = new ethers.Contract(IDENTITY_REGISTRY, [
+          "function register(string metadataURI) external"
+        ], wallet.signer);
+
+        setTxState('signing');
+        // Standard metadata URI for Yieldra
+        const metadataURI = "ipfs://bafkreidv6f67h7u2f2j2p2j2p2j2p2j2p2j2p2j2p2j2p2j2p2j2p2j2p2";
+        const regTx = await identityContract.register(metadataURI);
+        setTxState('mining');
+        await regTx.wait();
+      }
+
       // Transaction Confirmed! Inject the populated state.
-      // We still use the populated state mock to fill the charts visually in Fase 2
       dispatch(mockPopulatedState);
     } catch (err: any) {
       console.error(err);
@@ -125,7 +140,7 @@ export function OnboardingState() {
         )}
 
         <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-6)' }}>
-          *This interacts with Testnet. Please ensure you are on Sepolia and have sufficient gas.
+          *This interacts with the Arc Testnet. Please ensure you have testnet USDC.
         </p>
       </Panel>
     </div>

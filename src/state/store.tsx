@@ -65,6 +65,7 @@ export interface AppState {
   availableCredit: number;
   activeYieldAPY: number;
   autopilotActive: boolean;
+  agentId: string;
 
   // Credit
   behavioralScore: number;
@@ -122,6 +123,12 @@ export interface AppState {
   alerts: Alert[];
   exposureBreakdown: ExposureItem[];
   concentrationRisks: ConcentrationRisk[];
+
+  // Global Protocol Analytics
+  protocolTVL: number;
+  protocolTotalBorrowed: number;
+  protocolUtilization: number;
+  creditManagerLiquidity: number;
 }
 
 // ── Format utilities ──
@@ -157,6 +164,7 @@ const initialEmptyState: AppState = {
   availableCredit: 0,
   activeYieldAPY: 0,
   autopilotActive: false,
+  agentId: '0',
 
   // Credit
   behavioralScore: 0,
@@ -214,12 +222,17 @@ const initialEmptyState: AppState = {
   alerts: [],
   exposureBreakdown: [],
   concentrationRisks: [],
+  protocolTVL: 0,
+  protocolTotalBorrowed: 0,
+  protocolUtilization: 0,
+  creditManagerLiquidity: 0,
 };
 
 // ── Populated State (Triggered after physical deposit completion) ──
 export const mockPopulatedState: Partial<AppState> = {
   hasDeposited: true,
   autopilotActive: true,
+  agentId: '0',
   autopilotStatus: 'active',
   lastAction: 'Vault initialized',
   lastActionLabel: 'Agent standing by for yield allocation',
@@ -239,6 +252,10 @@ export const mockPopulatedState: Partial<AppState> = {
   alerts: [],
   exposureBreakdown: [],
   concentrationRisks: [],
+  protocolTVL: 0,
+  protocolTotalBorrowed: 0,
+  protocolUtilization: 0,
+  creditManagerLiquidity: 0,
 };
 
 // ── Context ──
@@ -270,12 +287,60 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const vaultContract = new ethers.Contract(addresses.ArcVault, abis.ArcVault, wallet.provider);
         const creditContract = new ethers.Contract(addresses.ArcCreditManager, abis.ArcCreditManager, wallet.provider);
         const scoreContract = new ethers.Contract(addresses.ArcScoreRegistry, abis.ArcScoreRegistry, wallet.provider);
+        const IDENTITY_REGISTRY = "0x8004A818BFB912233c491871b3d84c89A494BD9e";
+        const identityContract = new ethers.Contract(IDENTITY_REGISTRY, [
+          "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)"
+        ], wallet.provider);
 
         const depositWei = await vaultContract.getDeposit(wallet.address);
         const principalWei = await vaultContract.getPrincipal(wallet.address);
         const debtWei = await creditContract.getDebt(wallet.address);
         const limitWei = await creditContract.getAvailableCreditLimit(wallet.address);
         const scoreWei = await scoreContract.getScore(wallet.address);
+
+        // Fetch Global Protocol Stats
+        const globalTVLWei = await vaultContract.totalPrincipal();
+        const globalBorrowedWei = await creditContract.totalBorrowed();
+        const usdcAddress = addresses.MockUSDC;
+        const usdcContract = new ethers.Contract(usdcAddress, abis.MockUSDC, wallet.provider);
+        const cmLiquidityWei = await usdcContract.balanceOf(addresses.ArcCreditManager);
+
+        const globalTVLNum = parseFloat(ethers.formatUnits(globalTVLWei, 6));
+        const globalBorrowedNum = parseFloat(ethers.formatUnits(globalBorrowedWei, 6));
+        const cmLiquidityNum = parseFloat(ethers.formatUnits(cmLiquidityWei, 6));
+        const utilizationRate = globalTVLNum > 0 ? (globalBorrowedNum / globalTVLNum) * 100 : 0;
+
+        // Fetch Real Action Logs (Last 10 Borrowed/Repaid/Deposited events)
+        const borrowFilter = creditContract.filters.Borrowed(wallet.address);
+        const repayFilter = creditContract.filters.Repaid(wallet.address);
+        const depositFilter = vaultContract.filters.Deposited(wallet.address);
+
+        const [bLogs, rLogs, dLogs] = await Promise.all([
+          creditContract.queryFilter(borrowFilter, -5000),
+          creditContract.queryFilter(repayFilter, -5000),
+          vaultContract.queryFilter(depositFilter, -5000),
+        ]);
+
+        const allLogs: AgentLogEntry[] = [
+          ...bLogs.map(l => ({ time: 'Recently', action: `Borrowed ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'allocation' as const })),
+          ...rLogs.map(l => ({ time: 'Recently', action: `Repaid ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
+          ...dLogs.map(l => ({ time: 'Recently', action: `Deposited ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'harvest' as const })),
+        ].sort((a, b) => 0).slice(0, 10); // Simple slice for now
+
+        // Fetch Agent ID (ERC-8004) from Identity Registry
+        let detectedAgentId = state.agentId;
+        if (state.agentId === '0') {
+          try {
+            const filter = identityContract.filters.Transfer(null, wallet.address);
+            const logs = await identityContract.queryFilter(filter, -10000); // look back 10k blocks
+            if (logs.length > 0) {
+              const lastLog = logs[logs.length - 1] as ethers.EventLog;
+              detectedAgentId = lastLog.args.tokenId.toString();
+            }
+          } catch (e) {
+            console.warn("Failed to fetch agent ID", e);
+          }
+        }
 
         const depositNum = parseFloat(ethers.formatUnits(depositWei, 6));
         const principalNum = parseFloat(ethers.formatUnits(principalWei, 6));
@@ -292,7 +357,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           creditLimit: limitNum,
           behavioralScore: scoreNum,
           availableCredit: limitNum - debtNum > 0 ? limitNum - debtNum : 0,
-          scoreGrade: scoreNum > 800 ? 'A+' : scoreNum > 600 ? 'B' : 'C'
+          scoreGrade: scoreNum > 800 ? 'A+' : scoreNum > 600 ? 'B' : 'C',
+          agentId: detectedAgentId,
+          protocolTVL: globalTVLNum,
+          protocolTotalBorrowed: globalBorrowedNum,
+          protocolUtilization: utilizationRate,
+          creditManagerLiquidity: cmLiquidityNum,
+          agentLog: allLogs.length > 0 ? allLogs : prev.agentLog
         }));
       } catch (err) {
         console.error("Failed fetching on-chain data in store", err);
@@ -303,6 +374,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const pollInterval = setInterval(() => {
       tickRef.current += 1;
       fetchData();
+      
+      // We still update visual sim for "Uptime" and "Last Action" labels 
+      // but without warping the actual financial data
+      const simUpdates = simulateTick(state, { ...DEFAULT_SIM_CONFIG, yieldAccrual: false, scoreFluctuation: false, logGeneration: false }, tickRef.current);
+      setState(simUpdates);
     }, 12000); // 12s Ethereum block time average
 
     return () => clearInterval(pollInterval);

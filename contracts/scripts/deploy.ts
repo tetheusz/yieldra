@@ -62,7 +62,7 @@ async function main() {
   }
 
   // Give high score and 300 USDC uncollateralized limit to deployer for testing
-  const scoreTx = await scoreRegistry.updateScore(deployer.address, 950, ethers.parseUnits('300', 6));
+  const scoreTx = await scoreRegistry.updateScore(deployer.address, 950, ethers.parseUnits('300', 6), 0);
   await scoreTx.wait();
   console.log("Set Score=950 and UnsecuredLimit=300 USDC for deployer");
 

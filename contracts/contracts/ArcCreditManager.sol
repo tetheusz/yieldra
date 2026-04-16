@@ -25,6 +25,7 @@ contract ArcCreditManager is ReentrancyGuard {
     uint256 public constant MAX_LTV = 8000; 
 
     mapping(address => uint256) public debts;
+    uint256 public totalBorrowed;
 
     event Borrowed(address indexed user, uint256 amount, bool isUnsecured);
     event Repaid(address indexed user, uint256 amount);
@@ -61,6 +62,7 @@ contract ArcCreditManager is ReentrancyGuard {
         require(currentDebt + amount <= maxLimit, "Exceeds dynamic credit limit");
 
         debts[msg.sender] += amount;
+        totalBorrowed += amount;
         
         // Emulate sending USDC to the borrower (In production, the protocol yields liquidity)
         // Here we require the CreditManager itself is funded with USDC to hand out.
@@ -80,6 +82,12 @@ contract ArcCreditManager is ReentrancyGuard {
 
         usdc.safeTransferFrom(msg.sender, address(this), amount);
         debts[msg.sender] -= amount;
+
+        if (totalBorrowed >= amount) {
+            totalBorrowed -= amount;
+        } else {
+            totalBorrowed = 0;
+        }
 
         emit Repaid(msg.sender, amount);
     }

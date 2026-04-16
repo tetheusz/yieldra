@@ -1,6 +1,7 @@
 import './sidebar.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useWallet } from '../../state/wallet';
+import { useStore } from '../../state/store';
 
 interface SidebarProps {
   onNavigate?: () => void;
@@ -35,6 +36,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { wallet } = useWallet();
+  const state = useStore();
   const currentPath = location.pathname;
 
   const handleNav = (route: string) => {
@@ -87,7 +89,26 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         {wallet.connected && (
           <div className="sidebar__wallet-info">
             <div className="sidebar__wallet-avatar">{wallet.shortAddress?.slice(2, 4).toUpperCase()}</div>
-            <div className="sidebar__wallet-addr">{wallet.shortAddress}</div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div className="sidebar__wallet-addr">{wallet.shortAddress}</div>
+              {state.agentId !== '0' && (
+                <div style={{ 
+                  fontSize: '9px', 
+                  color: 'var(--accent-hover)', 
+                  fontWeight: 'bold', 
+                  letterSpacing: '0.05em', 
+                  marginTop: '2px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L4.5 20.29L5.21 21L12 18L18.79 21L19.5 20.29L12 2Z" />
+                  </svg>
+                  ARC AGENT #{state.agentId}
+                </div>
+              )}
+            </div>
           </div>
         )}
         <div className="sidebar__status">

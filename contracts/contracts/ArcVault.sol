@@ -16,6 +16,7 @@ contract ArcVault is ReentrancyGuard {
     }
     
     mapping(address => Position) public positions;
+    uint256 public totalPrincipal;
 
     // We set a more realistic APY for testnet sustainability 
     uint256 public constant APY_BPS = 500; // 500 -> 5%
@@ -50,6 +51,7 @@ contract ArcVault is ReentrancyGuard {
         
         positions[msg.sender].principal += (amount + pendingYield);
         positions[msg.sender].lastUpdated = block.timestamp;
+        totalPrincipal += amount;
         
         emit Deposited(msg.sender, amount);
     }
@@ -62,6 +64,12 @@ contract ArcVault is ReentrancyGuard {
         
         positions[msg.sender].principal = totalBalance - amount;
         positions[msg.sender].lastUpdated = block.timestamp;
+        
+        if (totalPrincipal >= amount) {
+            totalPrincipal -= amount;
+        } else {
+            totalPrincipal = 0;
+        }
         
         usdc.safeTransfer(msg.sender, amount);
         emit Withdrawn(msg.sender, amount);

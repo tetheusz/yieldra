@@ -21,6 +21,7 @@ const ACTIVITY_ICONS: Record<string, string> = {
   check: '◉',
   snapshot: '◻',
   allocation: '→',
+  registration: '★'
 };
 
 export function Overview() {
@@ -54,18 +55,18 @@ export function Overview() {
           <MetricDisplay label="Available Credit" value={formatUSD(s.availableCredit)} variant="compact" />
         </Panel>
         <Panel variant="bordered">
-          <MetricDisplay label="Active Yield APY" value={<LiveValue value={`${s.activeYieldAPY}%`} />} variant="compact" />
+          <MetricDisplay label="Active Yield APY" value={<LiveValue value={`5%`} />} variant="compact" />
         </Panel>
         <Panel variant="bordered">
           <span className="overview-autopilot-label">
-            Autopilot
+            Official Agent
           </span>
           <div className="autopilot-mini">
-            <span className="autopilot-mini__indicator" />
-            <span className="autopilot-mini__label">{s.autopilotActive ? 'Active' : 'Paused'}</span>
+            <span className="autopilot-mini__indicator" style={{ backgroundColor: s.agentId !== '0' ? 'var(--status-success)' : 'var(--text-tertiary)' }} />
+            <span className="autopilot-mini__label">{s.agentId !== '0' ? `ID #${s.agentId}` : 'Unregistered'}</span>
           </div>
           <span className="overview-autopilot-sub">
-            Last action: {s.lastAction}
+            System: Connected
           </span>
         </Panel>
       </div>
@@ -154,8 +155,8 @@ function OverviewRail() {
         <div className="section-label">Monthly Summary</div>
         <div className="overview-rail-metrics">
           <MetricDisplay label="Yield this month" value={formatUSD(s.yieldThisMonth)} variant="inline" />
-          <MetricDisplay label="Total allocated" value={formatUSD(s.totalAllocated)} variant="inline" />
-          <MetricDisplay label="Credit utilization" value={`${s.creditUtilization}%`} variant="inline" />
+          <MetricDisplay label="Protocol TVL" value={formatUSD(s.protocolTVL)} variant="inline" />
+          <MetricDisplay label="Protocol Utilization" value={`${s.protocolUtilization.toFixed(1)}%`} variant="inline" />
         </div>
       </div>
     </>
