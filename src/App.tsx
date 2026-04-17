@@ -9,7 +9,7 @@ import { WalletProvider } from './state/wallet';
 import { AppShell } from './layouts/AppShell';
 import { Landing } from './screens/landing/Landing';
 import { Overview } from './screens/overview/Overview';
-import { Credit } from './screens/credit/Credit';
+import { Vault } from './screens/credit/Vault';
 import { Treasury } from './screens/treasury/Treasury';
 import { Autopilot } from './screens/autopilot/Autopilot';
 import { Risk } from './screens/risk/Risk';
@@ -28,7 +28,7 @@ export function App() {
             {/* Workspace — inside app shell */}
             <Route element={<AppShell />}>
               <Route path="/overview" element={<Overview />} />
-              <Route path="/credit" element={<Credit />} />
+              <Route path="/credit" element={<Vault />} />
               <Route path="/treasury" element={<Treasury />} />
               <Route path="/autopilot" element={<Autopilot />} />
               <Route path="/risk" element={<Risk />} />

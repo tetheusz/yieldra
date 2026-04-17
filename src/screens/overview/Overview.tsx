@@ -37,7 +37,6 @@ export function Overview() {
           <h1 className="screen-header__title">Overview</h1>
           <p className="screen-header__subtitle">Your autonomous account at a glance</p>
         </div>
-        <ManageFunds />
       </div>
 
       {/* Hero Metrics */}

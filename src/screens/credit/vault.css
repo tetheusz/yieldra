@@ -1,0 +1,202 @@
+.vault-container {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.vault-action-panel {
+  background: rgba(10, 15, 25, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: var(--space-5);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.vault-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.vault-tab {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-tertiary);
+}
+
+.vault-tab--active {
+  background: var(--accent);
+  color: #000;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+}
+
+.vault-input-group {
+  margin-bottom: var(--space-4);
+}
+
+.vault-input-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.vault-input-wrapper {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: border-color 0.2s;
+}
+
+.vault-input-wrapper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
+}
+
+.vault-input-field {
+  background: transparent;
+  border: none;
+  color: #FFFFFF;
+  font-size: 24px;
+  font-weight: 600;
+  width: 100%;
+}
+
+.vault-input-field:focus {
+  outline: none;
+}
+
+.vault-confirm-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: var(--space-4);
+}
+
+.vault-confirm-btn--primary {
+  background: linear-gradient(135deg, var(--accent), #00ccff);
+  color: #000;
+  border: none;
+}
+
+.vault-confirm-btn--primary:hover {
+  filter: brightness(1.2);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.vault-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.vault-stat-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.vault-stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.vault-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.vault-stat-value--accent { color: var(--accent); }
+.vault-stat-value--danger { color: #ff4d4d; }
+.vault-stat-value--success { color: #00ff88; }
+
+.vault-health-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background: radial-gradient(circle at center, rgba(0, 255, 255, 0.05), transparent);
+  border-radius: 24px;
+}
+
+.health-gauge-container {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.health-gauge-svg {
+  transform: rotate(-90deg);
+}
+
+.health-gauge-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 12;
+}
+
+.health-gauge-fill {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease-out;
+}
+
+.health-gauge-content {
+  position: absolute;
+  text-align: center;
+}
+
+.health-gauge-value {
+  font-size: 48px;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+}
+
+.health-gauge-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.vault-info-strip {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+}

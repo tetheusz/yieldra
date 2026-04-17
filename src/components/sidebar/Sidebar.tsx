@@ -12,7 +12,7 @@ const NAV_SECTIONS = [
     section: 'Dashboard',
     items: [
       { label: 'Overview', route: '/overview', icon: <GridIcon /> },
-      { label: 'Credit', route: '/credit', icon: <CreditIcon /> },
+      { label: 'Vault', route: '/credit', icon: <VaultIcon /> },
       { label: 'APY', route: '/treasury', icon: <TreasuryIcon /> },
     ]
   },
@@ -132,11 +132,12 @@ function GridIcon() {
   );
 }
 
-function CreditIcon() {
+function VaultIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <circle cx="10" cy="10" r="7"/>
-      <path d="M10 6v8M7 9.5h6M8 13h4"/>
+      <rect x="3" y="4" width="14" height="12" rx="2"/>
+      <circle cx="10" cy="10" r="2.5"/>
+      <path d="M10 7.5v5M7.5 10h5"/>
     </svg>
   );
 }
