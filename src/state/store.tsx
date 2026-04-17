@@ -340,17 +340,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const totalRevenueNum = parseFloat(ethers.formatUnits(totalRevenueWei, 6));
         const utilizationRate = globalTVLNum > 0 ? (globalBorrowedNum / globalTVLNum) * 100 : 0;
 
-        // Fetch Global Action Logs (Last 10 Borrowed/Repaid/Deposited/Revenue events)
+        // Fetch Global Action Logs (Limit range to avoid RPC timeouts on new chains)
+        const blockRange = -200; 
         const borrowFilter = creditContract.filters.Borrowed();
         const repayFilter = creditContract.filters.Repaid();
         const depositFilter = vaultContract.filters.Deposited();
         const revenueFilter = creditContract.filters.RevenueInjected();
 
         const [bLogs, rLogs, dLogs, revLogs] = await Promise.all([
-          creditContract.queryFilter(borrowFilter, -5000),
-          creditContract.queryFilter(repayFilter, -5000),
-          vaultContract.queryFilter(depositFilter, -5000),
-          creditContract.queryFilter(revenueFilter, -5000),
+          creditContract.queryFilter(borrowFilter, blockRange).catch(() => []),
+          creditContract.queryFilter(repayFilter, blockRange).catch(() => []),
+          vaultContract.queryFilter(depositFilter, blockRange).catch(() => []),
+          creditContract.queryFilter(revenueFilter, blockRange).catch(() => []),
         ]);
 
         const allLogs: AgentLogEntry[] = [
@@ -358,17 +359,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           ...rLogs.map(l => ({ time: 'Recently', action: `CAPITAL_RECOVERY: Agent repaid ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
           ...dLogs.map(l => ({ time: 'Recently', action: `TVL_UPDATE: Liquidity Injection ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'harvest' as const })),
           ...revLogs.map(l => ({ time: 'Recently', action: `REVENUE_INGESTION: Protocol earned ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
-        ].sort((a, b) => bLogs.indexOf(b as any) - bLogs.indexOf(a as any)).slice(0, 15);
+        ].slice(0, 15);
 
         // Fetch Agent ID (ERC-8004) from Identity Registry
         let detectedAgentId = state.agentId;
         if (state.agentId === '0') {
           try {
             const filter = identityContract.filters.Transfer(null, wallet.address);
-            const logs = await identityContract.queryFilter(filter, -10000); // look back 10k blocks
-            if (logs.length > 0) {
-              const lastLog = logs[logs.length - 1] as ethers.EventLog;
-              detectedAgentId = lastLog.args.tokenId.toString();
+            const logs = await identityContract.queryFilter(filter, -2000); 
+            if (logs && logs.length > 0) {
+              const lastLog = logs[logs.length - 1] as any;
+              if (lastLog.args && lastLog.args.tokenId) {
+                detectedAgentId = lastLog.args.tokenId.toString();
+              }
             }
           } catch (e) {
             console.warn("Failed to fetch agent ID", e);
@@ -381,28 +384,28 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const limitNum = parseFloat(ethers.formatUnits(limitWei, 6));
         const scoreNum = Number(scoreWei);
 
-        setStateRaw(prev => ({
-          ...prev,
-          hasDeposited: depositNum > 0 ? true : prev.hasDeposited,
-          netWorth: depositNum,
-          accumulatedYield: depositNum > principalNum ? depositNum - principalNum : 0,
-          currentDebt: debtNum,
-          creditLimit: limitNum,
-          behavioralScore: scoreNum,
-          availableCredit: limitNum - debtNum > 0 ? limitNum - debtNum : 0,
-          scoreGrade: scoreNum > 800 ? 'A+' : scoreNum > 600 ? 'B' : 'C',
-          agentId: detectedAgentId,
-          activeYieldAPY: apyNum,
-          protocolTVL: globalTVLNum,
-          protocolTotalBorrowed: globalBorrowedNum,
-          protocolUtilization: utilizationRate,
-          protocolRevenue: totalRevenueNum,
-          creditManagerLiquidity: cmLiquidityNum,
-          agentLog: allLogs.length > 0 ? allLogs : prev.agentLog
-        }));
-      } catch (err) {
-        console.error("Failed fetching on-chain data in store", err);
-      }
+          setStateRaw(prev => ({
+            ...prev,
+            hasDeposited: depositNum > 0 ? true : prev.hasDeposited,
+            netWorth: depositNum,
+            accumulatedYield: depositNum > principalNum ? depositNum - principalNum : 0,
+            currentDebt: debtNum,
+            creditLimit: limitNum,
+            behavioralScore: scoreNum,
+            availableCredit: limitNum - debtNum > 0 ? limitNum - debtNum : 0,
+            scoreGrade: scoreNum > 800 ? 'A+' : scoreNum > 600 ? 'B' : 'C',
+            agentId: detectedAgentId,
+            activeYieldAPY: apyNum,
+            protocolTVL: globalTVLNum,
+            protocolTotalBorrowed: globalBorrowedNum,
+            protocolUtilization: utilizationRate,
+            protocolRevenue: totalRevenueNum,
+            creditManagerLiquidity: cmLiquidityNum,
+            agentLog: allLogs.length > 0 ? allLogs : prev.agentLog
+          }));
+        } catch (err) {
+          console.error("CRITICAL: Failed fetching on-chain data in store context", err);
+        }
     };
 
     fetchData(); // run immediately
