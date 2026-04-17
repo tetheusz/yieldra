@@ -51,14 +51,12 @@ export function AppShell() {
         <main className="app-main">
           <div className="app-main__content">
             <div id="screen-container">
-              {!s.hasDeposited ? <OnboardingState /> : <Outlet />}
+              <Outlet />
             </div>
           </div>
-          {s.hasDeposited && (
-            <aside className="app-main__rail" id="right-rail">
-              {railContent}
-            </aside>
-          )}
+          <aside className="app-main__rail" id="right-rail">
+            {railContent}
+          </aside>
         </main>
       </div>
     </RailContext.Provider>

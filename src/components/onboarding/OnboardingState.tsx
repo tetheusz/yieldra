@@ -29,12 +29,6 @@ export function OnboardingState() {
 
       // We will deposit user selected amount
       const depositAmount = ethers.parseUnits(depositAmountStr || '0', 6);
-      const minDeposit = ethers.parseUnits('50', 6);
-      if (depositAmount < minDeposit) {
-        setError("Deposit must be at least 50 USDC");
-        setTxState('idle');
-        return;
-      }
 
       setTxState('signing');
       // 1. Approve USDC
