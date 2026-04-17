@@ -211,19 +211,47 @@ function ManageFunds() {
         placeholder="0.00 USDC"
         value={amount}
         onChange={e => setAmount(e.target.value)}
-        style={{ width: '120px', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'inherit', fontSize: '14px' }}
+        style={{ 
+          width: '130px', 
+          padding: '10px 12px', 
+          borderRadius: '8px', 
+          border: '1px solid var(--accent)', 
+          background: 'rgba(0,0,0,0.4)', 
+          color: '#FFFFFF', /* PURE WHITE */
+          fontSize: '14px',
+          fontWeight: '600'
+        }}
       />
       <button 
         onClick={handleDeposit}
         disabled={txState !== 'idle' || !amount}
-        style={{ background: 'var(--accent-primary)', color: '#000', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', opacity: txState !== 'idle' ? 0.5 : 1 }}
+        style={{ 
+          background: 'var(--accent)', 
+          color: '#000', 
+          padding: '10px 20px', 
+          borderRadius: '8px', 
+          cursor: 'pointer', 
+          fontWeight: '800', 
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          opacity: txState !== 'idle' ? 0.5 : 1 
+        }}
       >
         {txState === 'depositing' ? '...' : 'Top Up'}
       </button>
       <button 
         onClick={handleWithdraw}
         disabled={txState !== 'idle' || !amount}
-        style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'inherit', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', opacity: txState !== 'idle' ? 0.5 : 1 }}
+        style={{ 
+          background: 'transparent', 
+          border: '2px solid var(--border-strong)', 
+          color: '#FFFFFF', /* PURE WHITE */
+          padding: '10px 20px', 
+          borderRadius: '8px', 
+          cursor: 'pointer', 
+          fontWeight: '700',
+          opacity: txState !== 'idle' ? 0.5 : 1 
+        }}
       >
         {txState === 'withdrawing' ? '...' : 'Withdraw'}
       </button>
