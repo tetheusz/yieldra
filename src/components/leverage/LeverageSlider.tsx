@@ -9,7 +9,7 @@ interface LeverageSliderProps {
 }
 
 export function LeverageSlider({ onBoost, isProcessing }: LeverageSliderProps) {
-  const { state } = useStore();
+  const state = useStore();
   const [factor, setFactor] = useState(1.0);
   
   // Mathematical limits and constants
