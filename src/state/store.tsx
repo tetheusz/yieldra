@@ -354,7 +354,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const utilizationRate = globalTVLNum > 0 ? (globalBorrowedNum / globalTVLNum) * 100 : 0;
 
         // Fetch Global Action Logs (Limit range to avoid RPC timeouts on new chains)
-        const blockRange = -200; 
+        const blockRange = -2000; 
         const borrowFilter = creditContract.filters.Borrowed();
         const repayFilter = creditContract.filters.Repaid();
         const depositFilter = vaultContract.filters.Deposited();
@@ -367,12 +367,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           creditContract.queryFilter(revenueFilter, blockRange).catch(() => []),
         ]);
 
-        const allLogs: AgentLogEntry[] = [
-          ...bLogs.map(l => ({ time: 'Recently', action: `AGENT_LOAN: Disbursed ${ethers.formatUnits((l as any).args.amount, 6)} USDC to ${(l as any).args.user.slice(0, 6)}`, type: 'allocation' as const })),
-          ...rLogs.map(l => ({ time: 'Recently', action: `CAPITAL_RECOVERY: Agent repaid ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
-          ...dLogs.map(l => ({ time: 'Recently', action: `TVL_UPDATE: Liquidity Injection ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'harvest' as const })),
-          ...revLogs.map(l => ({ time: 'Recently', action: `REVENUE_INGESTION: Protocol earned ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
-        ].slice(0, 15);
+        const formatTime = () => new Date().toLocaleTimeString();
+
+        const allLogs: (AgentLogEntry & { blockNumber: number })[] = [
+          ...bLogs.map(l => ({ blockNumber: l.blockNumber, time: formatTime(), action: `AGENT_LOAN: Disbursed ${ethers.formatUnits((l as any).args.amount, 6)} USDC to ${(l as any).args.user.slice(0, 6)}`, type: 'allocation' as const })),
+          ...rLogs.map(l => ({ blockNumber: l.blockNumber, time: formatTime(), action: `CAPITAL_RECOVERY: Agent repaid ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
+          ...dLogs.map(l => ({ blockNumber: l.blockNumber, time: formatTime(), action: `TVL_UPDATE: Liquidity Injection ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'harvest' as const })),
+          ...revLogs.map(l => ({ blockNumber: l.blockNumber, time: formatTime(), action: `REVENUE_INGESTION: Protocol earned ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
+        ].sort((a, b) => b.blockNumber - a.blockNumber).slice(0, 15);
 
         // Fetch Agent ID (ERC-8004) from Identity Registry
         let detectedAgentId = state.agentId;

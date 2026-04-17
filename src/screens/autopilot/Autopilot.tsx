@@ -84,7 +84,7 @@ export function Autopilot() {
           </div>
           {s.agentLog.map((log, i) => (
             <div key={i} className="matrix-log-line">
-              <span className="matrix-log-time">[{new Date().toLocaleTimeString()}]</span>
+              <span className="matrix-log-time">[{log.time}]</span>
               <span style={{ color: 'rgba(0, 255, 255, 0.5)' }}>INFO:</span>
               <span className="matrix-log-action">{log.action.toUpperCase()}</span>
             </div>
