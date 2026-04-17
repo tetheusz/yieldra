@@ -391,11 +391,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        const depositNum = parseFloat(ethers.formatUnits(depositWei, 6));
-        const principalNum = parseFloat(ethers.formatUnits(principalWei, 6));
-        const debtNum = parseFloat(ethers.formatUnits(debtWei, 6));
-        const limitNum = parseFloat(ethers.formatUnits(limitWei, 6));
-        const scoreNum = Number(scoreWei);
 
           setStateRaw(prev => ({
             ...prev,
