@@ -118,29 +118,29 @@ export function Credit() {
                   value={borrowAmountStr} 
                   onChange={e => setBorrowAmountStr(e.target.value)} 
                   placeholder="0.00" 
-                  style={{ width: '90px', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'inherit', fontSize: '14px' }}
+                  style={{ width: '90px', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--accent)', background: 'rgba(0,0,0,0.3)', color: '#FFFFFF', fontSize: '14px' }}
                 />
                 <button 
                   onClick={handleBorrow} 
                   disabled={txState !== 'idle' || !borrowAmountStr}
-                  style={{ background: 'var(--accent-primary)', color: '#000', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', opacity: txState !== 'idle' ? 0.5 : 1, fontWeight: 'bold' }}
+                  style={{ background: 'var(--accent)', color: '#000', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', opacity: txState !== 'idle' ? 0.5 : 1, fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                 >
                   {txState === 'borrowing' ? '...' : 'Borrow'}
                 </button>
 
-                <div style={{ width: '1px', background: 'var(--border)', height: '24px', margin: '0 8px' }} />
+                <div style={{ width: '1px', background: 'var(--border-subtle)', height: '32px', margin: '0 12px' }} />
 
                 <input 
                   type="number" 
                   value={repayAmountStr} 
                   onChange={e => setRepayAmountStr(e.target.value)} 
                   placeholder="0.00" 
-                  style={{ width: '90px', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'inherit', fontSize: '14px' }}
+                  style={{ width: '90px', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-strong)', background: 'rgba(0,0,0,0.3)', color: '#FFFFFF', fontSize: '14px' }}
                 />
                 <button 
                   onClick={handleRepay} 
                   disabled={txState !== 'idle' || !repayAmountStr}
-                  style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'inherit', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', opacity: txState !== 'idle' ? 0.5 : 1 }}
+                  style={{ background: 'transparent', border: '2px solid var(--border-strong)', color: '#FFFFFF', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', opacity: txState !== 'idle' ? 0.5 : 1, fontWeight: '700' }}
                 >
                   {txState === 'repaying' ? '...' : 'Repay'}
                 </button>

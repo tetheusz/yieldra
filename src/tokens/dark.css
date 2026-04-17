@@ -1,22 +1,42 @@
-/* ============================================
-   DARK MODE OVERRIDES
-   ============================================ */
+:root {
+  /* We enforce Dark Mode as the only mode for Yieldra */
+  color-scheme: dark;
+}
 
-.theme-dark {
+:root, .theme-dark {
   /* ── Semantic: Surfaces ── */
-  --surface-page: var(--color-slate-950);
-  --surface-primary: var(--color-slate-900);
-  --surface-elevated: var(--color-slate-800);
-  --surface-muted: var(--color-slate-800);
-  --surface-sunken: var(--color-black);
-  --surface-overlay: rgba(0, 0, 0, 0.7);
+  --surface-page: #020617; /* Slate 950 */
+  --surface-primary: #0f172a; /* Slate 900 */
+  --surface-elevated: #1e293b; /* Slate 800 */
+  --surface-muted: #1e293b;
+  --surface-sunken: #000000;
+  --surface-overlay: rgba(0, 0, 0, 0.85);
 
   /* ── Semantic: Text ── */
-  --text-primary: var(--color-slate-50);
-  --text-secondary: var(--color-slate-300);
-  --text-tertiary: var(--color-slate-500);
-  --text-inverse: var(--color-slate-900);
-  --text-accent: var(--color-accent-300);
+  --text-primary: #FFFFFF; /* PURE WHITE FOR LEGIBILITY */
+  --text-secondary: #cbd5e1; /* Slate 300 */
+  --text-tertiary: #64748b; /* Slate 500 */
+  --text-inverse: #020617;
+  --text-accent: #00f0ff; 
+
+  /* ── Semantic: Accent ── */
+  --accent: #00f0ff;
+  --accent-hover: #33f3ff;
+  --accent-active: #66f6ff;
+  --accent-subtle: rgba(0, 240, 255, 0.1);
+
+  /* ── Semantic: Status ── */
+  --status-success: #10b981;
+  --status-warning: #f59e0b;
+  --status-danger: #ef4444;
+  --status-neutral: #94a3b8;
+
+  /* ── Semantic: Borders ── */
+  --border-default: #334155;
+  --border-subtle: #1e293b;
+  --border-strong: #475569;
+  --border-accent: rgba(0, 240, 255, 0.5);
+}
 
   /* ── Semantic: Accent ── */
   --accent: var(--color-accent-400);
