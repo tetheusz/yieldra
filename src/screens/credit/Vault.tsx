@@ -85,7 +85,18 @@ export function Vault() {
             </div>
 
             <div className="vault-input-group">
-              <label className="vault-input-label">Amount in USDC</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-1)' }}>
+                <label className="vault-input-label">Amount in USDC</label>
+                <button 
+                  onClick={() => {
+                    const max = activeAction === 'deposit' ? '1000' : (s.netWorth + s.accumulatedYield).toString();
+                    setAmountStr(max);
+                  }}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '10px', cursor: 'pointer', fontWeight: 800 }}
+                >
+                  MAX
+                </button>
+              </div>
               <div className="vault-input-wrapper">
                 <input 
                   type="number" 
@@ -180,8 +191,26 @@ export function Vault() {
             </div>
             <div className="vault-stat-card">
               <div className="vault-stat-label">Accumulated Yield</div>
-              <div className="vault-stat-value vault-stat-value--accent">
+              <div className="vault-stat-value vault-stat-value--accent" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <LiveValue value={formatUSD(s.accumulatedYield)} />
+                {s.accumulatedYield > 0 && (
+                  <button 
+                    className="harvest-btn"
+                    onClick={async () => {
+                      if (!wallet.signer) return;
+                      setTxState('pending');
+                      try {
+                        const vault = new ethers.Contract(addresses.ArcVault, abis.ArcVault, wallet.signer);
+                        const tx = await vault.withdraw(ethers.parseUnits(s.accumulatedYield.toFixed(6), 6));
+                        await tx.wait();
+                      } catch(e) { console.error(e); }
+                      finally { setTxState('idle'); }
+                    }}
+                    disabled={txState !== 'idle'}
+                  >
+                    {txState === 'pending' ? '...' : 'HARVEST'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
