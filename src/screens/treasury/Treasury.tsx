@@ -21,18 +21,34 @@ export function Treasury() {
   const [isBoosting, setIsBoosting] = useState(false);
 
   const handleBoost = async (amount: number) => {
-    if (!wallet.signer || !amount) return;
+    console.log("Leverage Boost triggered!", { amount, hasSigner: !!wallet.signer });
+    
+    if (!wallet.signer) {
+      alert("Please connect your wallet first!");
+      return;
+    }
+    
+    if (!amount || amount <= 0) {
+      alert("Invalid boost amount.");
+      return;
+    }
+
     try {
       setIsBoosting(true);
       const creditContract = new ethers.Contract(addresses.ArcCreditManager, abis.ArcCreditManager, wallet.signer);
       
       const parsedAmount = ethers.parseUnits(amount.toFixed(6), 6);
-      const tx = await creditContract.leverageBoost(parsedAmount);
-      await tx.wait();
+      console.log("Calling leverageBoost with:", parsedAmount.toString());
       
-      // The store polling will catch the updated balance/debt
-    } catch (err) {
+      const tx = await creditContract.leverageBoost(parsedAmount);
+      console.log("Transaction sent:", tx.hash);
+      
+      await tx.wait();
+      console.log("Transaction confirmed!");
+      alert("Boost Successful! Your position has been multiplied.");
+    } catch (err: any) {
       console.error("Leverage Boost failed", err);
+      alert(`Transaction Failed: ${err.reason || err.message || "Unknown error"}`);
     } finally {
       setIsBoosting(false);
     }
@@ -68,7 +84,6 @@ export function Treasury() {
 
           <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
             
-            {/* Strategy Card 1 */}
             <div style={{ border: '1px solid var(--border-subtle)', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text-primary)' }}>Arc Native Base Pool</h3>
@@ -80,37 +95,8 @@ export function Treasury() {
               </div>
             </div>
 
-            {/* Strategy Card 2 */}
-            <div style={{ border: '1px solid var(--border-subtle)', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text-primary)' }}>DeFi Degen (Alice's Loop)</h3>
-                <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary)', fontSize: '13px' }}>High risk leveraging on Layer-2s. Lock for 30 days.</p>
-              </div>
-              <div style={{ textAlign: 'right', display: 'flex', gap: '16px', alignItems: 'center' }}>
-                <div>
-                  <div style={{ color: 'var(--accent-primary)', fontWeight: 'bold', fontSize: '18px' }}>15% APY</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>30D Lock</div>
-                </div>
-                <button style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', color: 'var(--text-primary)', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer' }}>Lock</button>
-              </div>
-            </div>
-
-            {/* Strategy Card 3 */}
-            <div style={{ border: '1px solid var(--border-subtle)', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text-primary)' }}>Institutional RWA Yield</h3>
-                <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary)', fontSize: '13px' }}>Safe haven backing tokenized T-Bills. Lock for 90 days.</p>
-              </div>
-              <div style={{ textAlign: 'right', display: 'flex', gap: '16px', alignItems: 'center' }}>
-                <div>
-                  <div style={{ color: 'var(--status-success)', fontWeight: 'bold', fontSize: '18px' }}>15% APY</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>90D Lock</div>
-                </div>
-                <button style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', color: 'var(--text-primary)', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', opacity: 0.5 }}>Soon</button>
-              </div>
-            </div>
-
           </div>
+
         </Panel>
       </div>
 

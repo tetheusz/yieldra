@@ -75,7 +75,7 @@ export function LeverageSlider({ onBoost, isProcessing }: LeverageSliderProps) {
         disabled={isProcessing || factor <= 1.0 || !isProfitable}
         onClick={() => onBoost(borrowAmount)}
       >
-        {isProcessing ? 'Processing Boost...' : 'Boost My Yield'}
+        {isProcessing ? 'Processando...' : 'Confirme'}
       </button>
     </div>
   );
