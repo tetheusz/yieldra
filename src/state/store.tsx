@@ -360,20 +360,25 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const depositFilter = vaultContract.filters.Deposited();
         const revenueFilter = creditContract.filters.RevenueInjected();
 
-        const [bLogs, rLogs, dLogs, revLogs] = await Promise.all([
+        const [bLogs, rLogs, dLogs, revLogs, currentBlock] = await Promise.all([
           creditContract.queryFilter(borrowFilter, blockRange).catch(() => []),
           creditContract.queryFilter(repayFilter, blockRange).catch(() => []),
           vaultContract.queryFilter(depositFilter, blockRange).catch(() => []),
           creditContract.queryFilter(revenueFilter, blockRange).catch(() => []),
+          wallet.provider.getBlockNumber().catch(() => 0),
         ]);
 
-        const formatTime = () => new Date().toLocaleTimeString();
+        const getLogTime = (logBlock: number) => {
+          if (!currentBlock || logBlock >= currentBlock) return new Date().toLocaleTimeString();
+          const secondsAgo = (currentBlock - logBlock) * 2; // ~2s per block on Arc
+          return new Date(Date.now() - secondsAgo * 1000).toLocaleTimeString();
+        };
 
         const allLogs: (AgentLogEntry & { blockNumber: number })[] = [
-          ...bLogs.map(l => ({ blockNumber: l.blockNumber, time: formatTime(), action: `AGENT_LOAN: Disbursed ${ethers.formatUnits((l as any).args.amount, 6)} USDC to ${(l as any).args.user.slice(0, 6)}`, type: 'allocation' as const })),
-          ...rLogs.map(l => ({ blockNumber: l.blockNumber, time: formatTime(), action: `CAPITAL_RECOVERY: Agent repaid ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
-          ...dLogs.map(l => ({ blockNumber: l.blockNumber, time: formatTime(), action: `TVL_UPDATE: Liquidity Injection ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'harvest' as const })),
-          ...revLogs.map(l => ({ blockNumber: l.blockNumber, time: formatTime(), action: `REVENUE_INGESTION: Protocol earned ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
+          ...bLogs.map(l => ({ blockNumber: l.blockNumber, time: getLogTime(l.blockNumber), action: `AGENT_LOAN: Disbursed ${ethers.formatUnits((l as any).args.amount, 6)} USDC to ${(l as any).args.user.slice(0, 6)}`, type: 'allocation' as const })),
+          ...rLogs.map(l => ({ blockNumber: l.blockNumber, time: getLogTime(l.blockNumber), action: `CAPITAL_RECOVERY: Agent repaid ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
+          ...dLogs.map(l => ({ blockNumber: l.blockNumber, time: getLogTime(l.blockNumber), action: `TVL_UPDATE: Liquidity Injection ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'harvest' as const })),
+          ...revLogs.map(l => ({ blockNumber: l.blockNumber, time: getLogTime(l.blockNumber), action: `REVENUE_INGESTION: Protocol earned ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
         ].sort((a, b) => b.blockNumber - a.blockNumber).slice(0, 15);
 
         // Fetch Agent ID (ERC-8004) from Identity Registry
