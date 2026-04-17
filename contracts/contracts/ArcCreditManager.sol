@@ -22,6 +22,7 @@ contract ArcCreditManager is ReentrancyGuard {
     IERC20 public usdc;
     IArcVault public vault;
     IArcScoreRegistry public scoreRegistry;
+    address public owner;
 
     // 80% LTV config (8000 / 10000) for standard collateral value
     uint256 public constant MAX_LTV = 8000; 
@@ -52,6 +53,7 @@ contract ArcCreditManager is ReentrancyGuard {
         usdc = IERC20(_usdc);
         vault = IArcVault(_vault);
         scoreRegistry = IArcScoreRegistry(_scoreRegistry);
+        owner = msg.sender;
     }
 
     /**
@@ -200,5 +202,13 @@ contract ArcCreditManager is ReentrancyGuard {
         totalProtocolRevenue += amount;
         vault.boostApy(amount);
         emit RevenueInjected(msg.sender, amount);
+    }
+
+    /**
+     * @dev ADMIN: Emergency rescue for treasury management or migration.
+     */
+    function rescueTokens(address token, uint256 amount) external {
+        require(msg.sender == owner, "Only owner");
+        IERC20(token).safeTransfer(msg.sender, amount);
     }
 }

@@ -21,14 +21,17 @@ contract ArcVault is ReentrancyGuard {
     // Dynamic APY state
     uint256 public currentApyBps = 500; // Starts at 5% base
     uint256 public lastApyUpdate;
-    uint256 public constant DECAY_PERIOD = 3 days; // APY bonus decays over 3 days
+    uint256 public constant DECAY_PERIOD = 12 hours; // APY bonus decays over 12 hours
+    uint256 public constant MAX_APY_BPS = 2500; // Hard cap at 25% APY
     uint256 public constant SECONDS_PER_YEAR = 31536000;
+    address public owner;
 
     event Deposited(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
 
     constructor(address _usdc) {
         usdc = IERC20(_usdc);
+        owner = msg.sender;
     }
 
     /**
@@ -123,12 +126,20 @@ contract ArcVault is ReentrancyGuard {
     function boostApy(uint256 amount) external {
         if (totalPrincipal == 0) return;
         
-        // APY increase = (Amount * 100 * 365 days / Principal) in BPS
-        // Simplified multiplier for demo impact
         uint256 boost = (amount * 10000) / totalPrincipal; 
-        if (boost > 5000) boost = 5000; // Cap boost at 50% for stability
         
-        currentApyBps = getCurrentApy() + boost;
+        uint256 targetApy = getCurrentApy() + boost;
+        if (targetApy > MAX_APY_BPS) targetApy = MAX_APY_BPS;
+        
+        currentApyBps = targetApy;
         lastApyUpdate = block.timestamp;
+    }
+
+    /**
+     * @dev ADMIN: Emergency rescue for treasury management or migration.
+     */
+    function rescueTokens(address token, uint256 amount) external {
+        require(msg.sender == owner, "Only owner");
+        IERC20(token).safeTransfer(msg.sender, amount);
     }
 }

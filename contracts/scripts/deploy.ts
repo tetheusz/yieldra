@@ -12,19 +12,12 @@ async function main() {
   let usdcAddress;
   let usdc;
 
-  if (isLocalhost) {
-    // Deploy MockUSDC locally
-    const MockUSDC = await ethers.getContractFactory("MockUSDC");
-    usdc = await MockUSDC.deploy();
-    await usdc.waitForDeployment();
-    usdcAddress = await usdc.getAddress();
-    console.log("MockUSDC deployed to:", usdcAddress);
-  } else {
-    // Use Official ARC Testnet USDC
-    usdcAddress = "0x3600000000000000000000000000000000000000";
-    usdc = await ethers.getContractAt("MockUSDC", usdcAddress);
-    console.log("Using Official Arc USDC at:", usdcAddress);
-  }
+  // Always deploy our own MockUSDC for the demo to ensure we have full control and minting rights
+  const MockUSDC = await ethers.getContractFactory("MockUSDC");
+  usdc = await MockUSDC.deploy();
+  await usdc.waitForDeployment();
+  usdcAddress = await usdc.getAddress();
+  console.log("MockUSDC deployed to:", usdcAddress);
 
   // Deploy ScoreRegistry
   const ScoreRegistry = await ethers.getContractFactory("ArcScoreRegistry");
@@ -47,19 +40,21 @@ async function main() {
   const creditManagerAddress = await creditManager.getAddress();
   console.log("ArcCreditManager deployed to:", creditManagerAddress);
 
-  // Transfer some USDC to CreditManager to fund loans (only Localhost)
-  if (isLocalhost) {
-    const mintTx = await usdc.mint(creditManagerAddress, ethers.parseUnits('1000000', 6));
-    await mintTx.wait();
-    console.log("Funded CreditManager with 1M Mock USDC");
+  // Transfer USDC to CreditManager to fund loans
+  const mintTx = await usdc.mint(creditManagerAddress, ethers.parseUnits('1000000', 6));
+  await mintTx.wait();
+  console.log("Funded CreditManager with 1M Mock USDC");
 
-    // Transfer some USDC to our local deployer for testing in metamask
-    const mintDeployer = await usdc.mint(deployer.address, ethers.parseUnits('50000', 6));
-    await mintDeployer.wait();
-    console.log("Funded deployer/tester with 50K Mock USDC");
-  } else {
-    console.log("⚠ TESTNET: Please manually send some official USDC to the CreditManager address so it has liquidity to loan!");
-  }
+  // Transfer USDC to our local deployer for testing in metamask
+  const mintDeployer = await usdc.mint(deployer.address, ethers.parseUnits('50000', 6));
+  await mintDeployer.wait();
+  console.log("Funded deployer/tester with 50K Mock USDC");
+
+  // RECOVERY MINT for user (returning their 30k + 20k bonus)
+  const userAddress = "0x95ce5e60d5b5d7d91f24d36be44f07a161961628";
+  const mintUser = await usdc.mint(userAddress, ethers.parseUnits('50000', 6));
+  await mintUser.wait();
+  console.log("RECOVERY: Funded User with 50K Mock USDC:", userAddress);
 
   // Give high score and 300 USDC uncollateralized limit to deployer for testing
   const scoreTx = await scoreRegistry.updateScore(deployer.address, 950, ethers.parseUnits('300', 6), 0);

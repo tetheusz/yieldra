@@ -60,8 +60,9 @@ async function main() {
 
       console.log(`   ✅ On-chain Settlement Success! TX: ${tx.hash}\n`);
 
-      // Wait 30-60 seconds before next injection
-      const waitTime = Math.floor(Math.random() * 20000) + 20000; // Faster for the first run
+      // Wait 10-15 minutes before next injection to conserve faucet and make logs more realistic
+      const waitTime = Math.floor(Math.random() * 300000) + 600000; 
+      console.log(`   ⏳ Cooling down for ${Math.round(waitTime/60000)} minutes...`);
       await new Promise(r => setTimeout(r, waitTime));
 
     } catch (err) {
