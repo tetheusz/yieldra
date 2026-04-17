@@ -318,21 +318,34 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)"
         ], wallet.provider);
 
-        const depositWei = await vaultContract.getDeposit(wallet.address);
-        const principalWei = await vaultContract.getPrincipal(wallet.address);
-        const debtWei = await creditContract.getDebt(wallet.address);
-        const limitWei = await creditContract.getAvailableCreditLimit(wallet.address);
-        const scoreWei = await scoreContract.getScore(wallet.address);
-        const apyBps = await vaultContract.getCurrentApy();
-        const totalRevenueWei = await creditContract.totalProtocolRevenue();
+        // Individual resilient fetches
+        let depositWei = BigInt(0), principalWei = BigInt(0), debtWei = BigInt(0), limitWei = BigInt(0), scoreWei = BigInt(0), apyBps = BigInt(500), totalRevenueWei = BigInt(0), globalTVLWei = BigInt(0), globalBorrowedWei = BigInt(0), cmLiquidityWei = BigInt(0);
+
+        try { depositWei = await vaultContract.getDeposit(wallet.address); } catch(e) {}
+        try { 
+          const pos = await vaultContract.positions(wallet.address); 
+          principalWei = pos.principal;
+        } catch(e) {}
+        try { debtWei = await creditContract.getDebt(wallet.address); } catch(e) {}
+        try { limitWei = await creditContract.getAvailableCreditLimit(wallet.address); } catch(e) {}
+        try { scoreWei = await scoreContract.getScore(wallet.address); } catch(e) {}
+        try { apyBps = await vaultContract.getCurrentApy(); } catch(e) {}
+        try { totalRevenueWei = await creditContract.totalProtocolRevenue(); } catch(e) {}
+        try { globalTVLWei = await vaultContract.totalPrincipal(); } catch(e) {}
+        try { globalBorrowedWei = await creditContract.totalBorrowed(); } catch(e) {}
+        try { 
+          const usdcAddress = addresses.MockUSDC;
+          const usdcContract = new ethers.Contract(usdcAddress, abis.MockUSDC, wallet.provider);
+          cmLiquidityWei = await usdcContract.balanceOf(addresses.ArcCreditManager); 
+        } catch(e) {}
+
         const apyNum = Number(apyBps) / 100;
 
-        // Fetch Global Protocol Stats
-        const globalTVLWei = await vaultContract.totalPrincipal();
-        const globalBorrowedWei = await creditContract.totalBorrowed();
-        const usdcAddress = addresses.MockUSDC;
-        const usdcContract = new ethers.Contract(usdcAddress, abis.MockUSDC, wallet.provider);
-        const cmLiquidityWei = await usdcContract.balanceOf(addresses.ArcCreditManager);
+        const depositNum = parseFloat(ethers.formatUnits(depositWei, 6));
+        const principalNum = parseFloat(ethers.formatUnits(principalWei, 6));
+        const debtNum = parseFloat(ethers.formatUnits(debtWei, 6));
+        const limitNum = parseFloat(ethers.formatUnits(limitWei, 6));
+        const scoreNum = Number(scoreWei);
 
         const globalTVLNum = parseFloat(ethers.formatUnits(globalTVLWei, 6));
         const globalBorrowedNum = parseFloat(ethers.formatUnits(globalBorrowedWei, 6));
