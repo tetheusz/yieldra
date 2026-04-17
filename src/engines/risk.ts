@@ -19,6 +19,20 @@ export interface RiskAssessment {
   level: RiskLevel;
   score: number;               // 0-100, higher = riskier
   healthFactor: number;
+  leverageFactor: number;
+}
+
+/** 
+ * Calculate Net APY considering Borrowing Costs 
+ * Formula: ((Principal + Borrowed) * YieldRate - Borrowed * BorrowRate) / Principal
+ */
+export function calculateNetYield(principal: number, borrowed: number, yieldRate: number, borrowRate: number): number {
+  if (principal <= 0) return 0;
+  const totalAssets = principal + borrowed;
+  const grossYield = totalAssets * (yieldRate / 100);
+  const interestCost = borrowed * (borrowRate / 100);
+  const netProfit = grossYield - interestCost;
+  return (netProfit / principal) * 100;
 }
 
 /** Calculate overall risk level */
@@ -67,6 +81,7 @@ export function assessRisk(inputs: RiskInputs): RiskAssessment {
     level,
     score: riskScore,
     healthFactor: inputs.healthFactor,
+    leverageFactor: (inputs.creditUtilization / 80) + 1.0, // Simplistic mapping for risk display
   };
 }
 

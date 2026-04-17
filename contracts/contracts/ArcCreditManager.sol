@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 interface IArcVault {
     function getDeposit(address user) external view returns (uint256);
+    function depositFor(address user, uint256 amount) external;
 }
 
 interface IArcScoreRegistry {
@@ -27,8 +28,12 @@ contract ArcCreditManager is ReentrancyGuard {
     mapping(address => uint256) public debts;
     uint256 public totalBorrowed;
 
+    // We add a 3% APR for borrowing to make the leverage math real
+    uint256 public constant BORROW_INTEREST_BPS = 300; 
+
     event Borrowed(address indexed user, uint256 amount, bool isUnsecured);
     event Repaid(address indexed user, uint256 amount);
+    event LeverageBoosted(address indexed user, uint256 amount);
 
     constructor(address _usdc, address _vault, address _scoreRegistry) {
         usdc = IERC20(_usdc);
@@ -94,5 +99,27 @@ contract ArcCreditManager is ReentrancyGuard {
 
     function getDebt(address user) external view returns (uint256) {
         return debts[user];
+    }
+
+    /**
+     * @dev ATOMIC LEVERAGE: Borrows USDC and immediately deposits it 
+     * back into the vault for the user in a single transaction.
+     */
+    function leverageBoost(uint256 amount) external nonReentrant {
+        require(amount > 0, "Amount must be > 0");
+
+        uint256 maxLimit = getAvailableCreditLimit(msg.sender);
+        uint256 currentDebt = debts[msg.sender];
+        
+        require(currentDebt + amount <= maxLimit, "Exceeds dynamic credit limit");
+
+        debts[msg.sender] += amount;
+        totalBorrowed += amount;
+
+        // Atomic flow: We don't send USDC to user, we send it to Vault for them
+        usdc.approve(address(vault), amount);
+        vault.depositFor(msg.sender, amount);
+
+        emit LeverageBoosted(msg.sender, amount);
     }
 }

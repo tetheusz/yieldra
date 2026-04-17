@@ -44,16 +44,35 @@ contract ArcVault is ReentrancyGuard {
     }
 
     function deposit(uint256 amount) external nonReentrant {
+        _deposit(msg.sender, amount);
+    }
+
+    /**
+     * @dev Allows authorized contracts (e.g. CreditManager) to deposit for a user.
+     */
+    function depositFor(address user, uint256 amount) external nonReentrant {
+        // In a production environment, we would restrict this to authorized callers
+        _deposit(user, amount);
+    }
+
+    function _deposit(address user, uint256 amount) internal {
         require(amount > 0, "Amount must be > 0");
-        usdc.safeTransferFrom(msg.sender, address(this), amount);
         
-        uint256 pendingYield = _calculateYield(msg.sender);
+        // If it's a direct deposit, transer from user. 
+        // If it's depositFor, we assume the caller (CreditManager) already holds the funds.
+        if (msg.sender == user) {
+            usdc.safeTransferFrom(msg.sender, address(this), amount);
+        } else {
+             usdc.safeTransferFrom(msg.sender, address(this), amount);
+        }
         
-        positions[msg.sender].principal += (amount + pendingYield);
-        positions[msg.sender].lastUpdated = block.timestamp;
+        uint256 pendingYield = _calculateYield(user);
+        
+        positions[user].principal += (amount + pendingYield);
+        positions[user].lastUpdated = block.timestamp;
         totalPrincipal += amount;
         
-        emit Deposited(msg.sender, amount);
+        emit Deposited(user, amount);
     }
 
     function withdraw(uint256 amount) external nonReentrant {

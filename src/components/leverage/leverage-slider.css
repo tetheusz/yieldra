@@ -1,0 +1,129 @@
+.leverage-container {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.leverage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.leverage-header__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.leverage-header__factor {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.leverage-header__factor--low { color: var(--status-success); }
+.leverage-header__factor--medium { color: var(--status-warning); }
+.leverage-header__factor--high { color: var(--status-danger); }
+
+.leverage-slider {
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--bg-surface-secondary);
+  border-radius: 3px;
+  outline: none;
+}
+
+.leverage-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--accent-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.leverage-slider:active::-webkit-slider-thumb {
+  transform: scale(1.2);
+}
+
+.leverage-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.leverage-preview__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preview-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.preview-value {
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.agent-recommendation {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: rgba(var(--accent-primary-rgb), 0.05);
+  border-left: 3px solid var(--accent-primary);
+  border-radius: 0 4px 4px 0;
+}
+
+.agent-recommendation__icon { font-size: 18px; }
+.agent-recommendation__text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.leverage-boost-btn {
+  background: var(--accent-primary);
+  color: #000;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.leverage-boost-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);
+}
+
+.leverage-boost-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--text-tertiary);
+}
+
+.text-success { color: var(--status-success); }
+.text-warning { color: var(--status-warning); }

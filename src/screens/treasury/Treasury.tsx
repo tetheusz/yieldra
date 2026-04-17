@@ -8,15 +8,35 @@ import { MiniChart, ProgressBar } from '../../components/mini-chart/MiniChart';
 import { AllocationBar } from '../../components/allocation-bar/AllocationBar';
 import { StatusBadge } from '../../components/status-badge/StatusBadge';
 import { LiveValue } from '../../components/live-value/LiveValue';
+import { LeverageSlider } from '../../components/leverage/LeverageSlider';
+import { useWallet } from '../../state/wallet';
+import { ethers } from 'ethers';
+import addresses from '../../config/contractAddresses.json';
+import abis from '../../config/contractABIs.json';
+import { useState } from 'react';
 
 export function Treasury() {
   const s = useStore();
+  const { wallet } = useWallet();
+  const [isBoosting, setIsBoosting] = useState(false);
 
-  useRightRail(<TreasuryRail />, []);
-
-  // For the demo, we read the real Net Worth from the ArcVault (inflated algorithmically)
-  // We'll calculate the difference between real deposit and initial principal visually if we want, 
-  // but for simplicity, we just show their total equity as "Total Locked".
+  const handleBoost = async (amount: number) => {
+    if (!wallet.signer || !amount) return;
+    try {
+      setIsBoosting(true);
+      const creditContract = new ethers.Contract(addresses.ArcCreditManager, abis.ArcCreditManager, wallet.signer);
+      
+      const parsedAmount = ethers.parseUnits(amount.toFixed(6), 6);
+      const tx = await creditContract.leverageBoost(parsedAmount);
+      await tx.wait();
+      
+      // The store polling will catch the updated balance/debt
+    } catch (err) {
+      console.error("Leverage Boost failed", err);
+    } finally {
+      setIsBoosting(false);
+    }
+  };
 
   return (
     <>
@@ -91,6 +111,16 @@ export function Treasury() {
             </div>
 
           </div>
+        </Panel>
+      </div>
+
+      {/* Autonomous Leverage Section */}
+      <div className="treasury-leverage animate-fade-in-up stagger-4" style={{ marginTop: 'var(--space-4)' }}>
+        <Panel variant="bordered" title="Yield Booster Agent (AI Strategic Layer)">
+          <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)', fontSize: '14px' }}>
+            Allow the agent to autonomously borrow and reinvest to multiply your yields. Current strategy: **Leveraged Interest Rate Arbitrage**.
+          </p>
+          <LeverageSlider onBoost={handleBoost} isProcessing={isBoosting} />
         </Panel>
       </div>
     </>
