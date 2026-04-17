@@ -1,130 +1,131 @@
 import './autopilot.css';
 import { useStore, formatUSD } from '../../state/store';
 import { useRightRail } from '../../layouts/AppShell';
-import { Panel } from '../../components/panel/Panel';
-import { MetricDisplay } from '../../components/metric-display/MetricDisplay';
-import { StatusBadge } from '../../components/status-badge/StatusBadge';
-import { ProgressBar } from '../../components/mini-chart/MiniChart';
+import { useEffect, useState, useRef } from 'react';
 
 export function Autopilot() {
   const s = useStore();
+  const [lastLogTime, setLastLogTime] = useState(new Date().toLocaleTimeString());
+  const logEndRef = useRef<HTMLDivElement>(null);
 
-  useRightRail(<AutopilotRail />, []);
+  useRightRail(<MatrixRail />, []);
 
-  const perf = s.performanceSinceActivation;
+  useEffect(() => {
+    const int = setInterval(() => {
+      setLastLogTime(new Date().toLocaleTimeString());
+    }, 1000);
+    return () => clearInterval(int);
+  }, []);
+
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [s.agentLog]);
 
   return (
-    <>
+    <div className="matrix-terminal animate-fade-in-up">
       {/* Header */}
-      <div className="screen-header animate-fade-in-up stagger-1">
-        <h1 className="screen-header__title">Autopilot</h1>
-        <p className="screen-header__subtitle">Automated yield management and profit distribution</p>
+      <div className="matrix-header">
+        <div>
+          <div className="matrix-title glitch-text">NEURAL LINK MONITOR</div>
+          <div style={{ color: 'rgba(0, 255, 255, 0.5)', fontSize: '10px', marginTop: '4px' }}>
+            ID: {s.agentId !== '0' ? `IDENTITY_CORE_${s.agentId}` : 'GUEST_OVERRIDE'} // ARC_PROTOCOL_V3
+          </div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div className="matrix-status-pulse"></div>
+          <span style={{ fontSize: '12px', color: 'var(--accent)' }}>NEURAL_LINK_ESTABLISHED</span>
+          <div style={{ fontSize: '10px', color: 'rgba(0, 255, 255, 0.5)' }}>SYNC_TS: {lastLogTime}</div>
+        </div>
       </div>
 
-      {/* Status Hero */}
-      <div className="autopilot-status-hero animate-fade-in-up stagger-2">
-        <Panel variant="bordered" title="System Status">
-          <div className="autopilot-status-display">
-            <div className={`autopilot-toggle autopilot-toggle--${s.autopilotStatus === 'active' ? 'on' : 'off'}`}>
-              <div className="autopilot-toggle__knob" />
+      <div className="matrix-grid">
+        {/* TOP CARDS */}
+        <div className="matrix-card">
+          <div className="matrix-card__title">INTELLIGENCE_METRICS</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div>
+              <div style={{ fontSize: '10px', color: 'rgba(0, 255, 255, 0.6)' }}>TX_VELOCITY</div>
+              <div style={{ fontSize: '20px', fontWeight: 700 }}>{s.capitalVelocity.toFixed(2)}x</div>
             </div>
-            <div className="autopilot-status-info">
-              <StatusBadge
-                label={s.autopilotStatus === 'active' ? 'Active' : 'Paused'}
-                variant={s.autopilotStatus === 'active' ? 'success' : 'neutral'}
-                live={s.autopilotStatus === 'active'}
-              />
-              <span className="autopilot-status-info__sub">Uptime: {s.autopilotUptime}</span>
-              <span className="autopilot-status-info__sub">Last action: {s.lastAction}</span>
+            <div>
+              <div style={{ fontSize: '10px', color: 'rgba(0, 255, 255, 0.6)' }}>NETWORK_LOAD</div>
+              <div style={{ fontSize: '20px', fontWeight: 700 }}>{s.protocolUtilization.toFixed(1)}%</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '10px', color: 'rgba(0, 255, 255, 0.6)' }}>ACTIVE_NODES</div>
+              <div style={{ fontSize: '20px', fontWeight: 700 }}>{s.agentRegistry.length}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '10px', color: 'rgba(0, 255, 255, 0.6)' }}>YIELD_PPS</div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>${(s.protocolRevenue / 1000).toFixed(4)}</div>
             </div>
           </div>
-        </Panel>
+        </div>
 
-        <Panel variant="bordered" title="Since Activation">
-          <div className="autopilot-perf-grid">
-            <MetricDisplay label="Total Gains" value={formatUSD(s.accumulatedYield)} variant="compact" />
-            <MetricDisplay label="Actions Taken" value={s.agentLog.length.toString()} variant="compact" />
-            <MetricDisplay label="Days Active" value={perf.daysActive.toString()} variant="compact" />
-            <MetricDisplay label="Avg Daily Yield" value={formatUSD(s.accumulatedYield / Math.max(perf.daysActive, 1))} variant="compact" />
-          </div>
-        </Panel>
-      </div>
-
-      {/* Profit Distribution */}
-      <div className="autopilot-distribution animate-fade-in-up stagger-3">
-        <Panel variant="bordered" title="Profit Distribution" subtitle="How yield is allocated">
-          <div className="distribution-bars">
-            {[
-              { label: 'Amortization', value: s.profitDistribution.amortization, color: 'accent' as const },
-              { label: 'Reinvestment', value: s.profitDistribution.reinvestment, color: 'success' as const },
-              { label: 'Reserve', value: s.profitDistribution.reserve, color: 'warning' as const },
-            ].map(d => (
-              <div key={d.label} className="distribution-row">
-                <span className="distribution-row__label">{d.label}</span>
-                <div className="distribution-row__bar">
-                  <ProgressBar value={d.value} color={d.color} height={8} />
+        <div className="matrix-card">
+          <div className="matrix-card__title">ACTIVE_AGENT_REGISTRY</div>
+          <div className="matrix-agent-grid">
+            {s.agentRegistry.slice(0, 4).map(agent => (
+              <div key={agent.id} className="matrix-agent-card">
+                <div style={{ fontWeight: 800 }}>{agent.name.toUpperCase()}</div>
+                <div style={{ fontSize: '10px', opacity: 0.7 }}>SCORE: {agent.score}</div>
+                <div style={{ fontSize: '10px', color: agent.status === 'active' ? 'var(--accent)' : '#ff4d4d' }}>
+                  [{agent.status.toUpperCase()}]
                 </div>
-                <span className="distribution-row__value">{d.value}%</span>
               </div>
             ))}
           </div>
-        </Panel>
+        </div>
+
+        {/* LOG CONSOLE */}
+        <div className="matrix-log-container">
+          <div style={{ marginBottom: '12px', borderBottom: '1px solid rgba(0,255,255,0.2)', paddingBottom: '4px', fontSize: '10px', color: 'var(--accent)' }}>
+            // LIVE_NEURAL_LOG_STREAM //////////////////////////////////////////////////////
+          </div>
+          {s.agentLog.map((log, i) => (
+            <div key={i} className="matrix-log-line">
+              <span className="matrix-log-time">[{new Date().toLocaleTimeString()}]</span>
+              <span style={{ color: 'rgba(0, 255, 255, 0.5)' }}>INFO:</span>
+              <span className="matrix-log-action">{log.action.toUpperCase()}</span>
+            </div>
+          ))}
+          {/* FAKE MATRIX NOISE */}
+          <div className="matrix-log-line" style={{ opacity: 0.3 }}>
+             <span className="matrix-log-time">[{new Date().toLocaleTimeString()}]</span>
+             <span style={{ color: 'var(--accent)' }}>SYS_TRC: rebalancing_liquidity_weights_0x4f..._OK</span>
+          </div>
+          <div ref={logEndRef} />
+        </div>
       </div>
 
-      {/* Agent Log */}
-      <div className="autopilot-log animate-fade-in-up stagger-4">
-        <Panel variant="bordered" title="Agent Activity Log" subtitle="Recent automated actions">
-          <div className="log-list">
-            {s.agentLog.map((log, i) => (
-              <div key={i} className="log-entry">
-                <span className="log-entry__time">{log.time}</span>
-                <span className={`log-entry__dot log-entry__dot--${log.type}`} />
-                <span className="log-entry__action">{log.action}</span>
-              </div>
-            ))}
-          </div>
-        </Panel>
+      <div style={{ marginTop: 'var(--space-6)', textAlign: 'center', fontSize: '11px', color: 'rgba(0, 255, 255, 0.3)' }}>
+        YIELDRA_OS // KERNEL_8.0.0.4 // PURE_TRUST_PROTOCOL
       </div>
-
-      {/* Configuration */}
-      <div className="autopilot-config animate-fade-in-up stagger-5">
-        <Panel variant="bordered" title="Configuration">
-          <div className="config-grid">
-            {[
-              { label: 'Max Single Allocation', value: `${s.autopilotConfig.maxSingleAllocation}%` },
-              { label: 'Rebalance Threshold', value: `${s.autopilotConfig.rebalanceThreshold}%` },
-              { label: 'Auto-Repayment', value: s.autopilotConfig.autoRepayment ? 'Enabled' : 'Disabled' },
-              { label: 'Min Reserve', value: `${s.autopilotConfig.minReserve}%` },
-              { label: 'Risk Tolerance', value: s.autopilotConfig.riskTolerance.charAt(0).toUpperCase() + s.autopilotConfig.riskTolerance.slice(1) },
-            ].map(c => (
-              <div key={c.label} className="config-item">
-                <span className="config-item__label">{c.label}</span>
-                <span className="config-item__value">{c.value}</span>
-              </div>
-            ))}
-          </div>
-        </Panel>
-      </div>
-    </>
+    </div>
   );
 }
 
-function AutopilotRail() {
+function MatrixRail() {
   return (
-    <div className="animate-fade-in-up stagger-3">
-      <div className="section-label">How Autopilot Works</div>
-      <div className="rail-info-blocks">
-        {[
-          { title: 'Monitoring', desc: 'Continuously monitors yield strategies and cash flow patterns.' },
-          { title: 'Rebalancing', desc: 'Automatically moves capital between strategies when thresholds are crossed.' },
-          { title: 'Repayment', desc: 'Allocates yield toward debt amortization based on distribution rules.' },
-          { title: 'Harvesting', desc: 'Collects accrued yield and routes it per profit distribution settings.' },
-        ].map(item => (
-          <div key={item.title}>
-            <div className="rail-info-blocks__title">{item.title}</div>
-            <div>{item.desc}</div>
-          </div>
-        ))}
+    <div className="matrix-rail animate-fade-in-up stagger-2" style={{ color: 'var(--accent)', fontFamily: 'monospace' }}>
+      <div className="section-label" style={{ color: 'var(--accent)', borderBottom: '1px solid var(--accent)' }}>System Intelligence</div>
+      <div style={{ marginTop: '16px', fontSize: '12px' }}>
+        <p style={{ marginBottom: '12px' }}>
+          {">"} The Neural Link monitors the autonomous decision loops of high-reputation entities.
+        </p>
+        <p style={{ marginBottom: '12px' }}>
+          {">"} Liquidity is routed dynamically between agents based on real-time repayment velocity.
+        </p>
+        <p style={{ marginBottom: '12px' }}>
+          {">"} Any reputation drop below 400 triggers immediate capital retrieval and justice slashing.
+        </p>
+      </div>
+      
+      <div className="section-label" style={{ color: 'var(--accent)', borderBottom: '1px solid var(--accent)', marginTop: '24px' }}>Neural Net Status</div>
+      <div style={{ padding: '12px', background: 'rgba(0,255,255,0.05)', marginTop: '8px', border: '1px solid var(--accent)' }}>
+         <div style={{ fontSize: '10px' }}>PROBABILITY_OF_DEFAULT: 0.04%</div>
+         <div style={{ fontSize: '10px' }}>CAPITAL_UTILIZATION: OPTIMAL</div>
+         <div style={{ fontSize: '10px' }}>SYSTEM_SOLVENCY: 142%</div>
       </div>
     </div>
   );

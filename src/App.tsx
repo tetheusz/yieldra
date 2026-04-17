@@ -32,8 +32,6 @@ export function App() {
               <Route path="/treasury" element={<Treasury />} />
               <Route path="/autopilot" element={<Autopilot />} />
               <Route path="/risk" element={<Risk />} />
-              <Route path="/activity" element={<Activity />} />
-              <Route path="/settings" element={<Settings />} />
             </Route>
 
             {/* Fallback */}

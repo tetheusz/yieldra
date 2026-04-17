@@ -18,8 +18,10 @@ contract ArcVault is ReentrancyGuard {
     mapping(address => Position) public positions;
     uint256 public totalPrincipal;
 
-    // We set a more realistic APY for testnet sustainability 
-    uint256 public constant APY_BPS = 500; // 500 -> 5%
+    // Dynamic APY state
+    uint256 public currentApyBps = 500; // Starts at 5% base
+    uint256 public lastApyUpdate;
+    uint256 public constant DECAY_PERIOD = 3 days; // APY bonus decays over 3 days
     uint256 public constant SECONDS_PER_YEAR = 31536000;
 
     event Deposited(address indexed user, uint256 amount);
@@ -30,16 +32,29 @@ contract ArcVault is ReentrancyGuard {
     }
 
     /**
-     * @dev Algorithmic yield calculation based on time passed.
+     * @dev Calculates the decayed APY level based on time since last agent revenue injection.
+     */
+    function getCurrentApy() public view returns (uint256) {
+        if (block.timestamp >= lastApyUpdate + DECAY_PERIOD) return 500; // Return to base 5%
+        
+        uint256 elapsed = block.timestamp - lastApyUpdate;
+        uint256 decayAmount = (currentApyBps - 500) * elapsed / DECAY_PERIOD;
+        
+        if (currentApyBps <= 500 + decayAmount) return 500;
+        return currentApyBps - decayAmount;
+    }
+
+    /**
+     * @dev Algorithmic yield calculation based on time passed and dynamic rate.
      */
     function _calculateYield(address user) internal view returns (uint256) {
         Position memory pos = positions[user];
         if (pos.principal == 0) return 0;
         
         uint256 timeElapsed = block.timestamp - pos.lastUpdated;
+        uint256 avgApy = getCurrentApy(); // Uses the current decayed rate for simple demo math
         
-        // Simple interest math: (Principal * Rate * Time)
-        uint256 earned = (pos.principal * APY_BPS * timeElapsed) / (10000 * SECONDS_PER_YEAR);
+        uint256 earned = (pos.principal * avgApy * timeElapsed) / (10000 * SECONDS_PER_YEAR);
         return earned;
     }
 
@@ -102,9 +117,18 @@ contract ArcVault is ReentrancyGuard {
     }
 
     /**
-     * @dev Exposed purely for UI metric calculations if needed.
+     * @dev APY STIMULATOR: Increases APY based on revenue inflow.
+     * Only authorized (CreditManager) in prod.
      */
-    function getPrincipal(address user) external view returns (uint256) {
-        return positions[user].principal;
+    function boostApy(uint256 amount) external {
+        if (totalPrincipal == 0) return;
+        
+        // APY increase = (Amount * 100 * 365 days / Principal) in BPS
+        // Simplified multiplier for demo impact
+        uint256 boost = (amount * 10000) / totalPrincipal; 
+        if (boost > 5000) boost = 5000; // Cap boost at 50% for stability
+        
+        currentApyBps = getCurrentApy() + boost;
+        lastApyUpdate = block.timestamp;
     }
 }

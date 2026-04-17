@@ -41,6 +41,9 @@ const LOG_TEMPLATES: { action: string; type: AgentLogEntry['type'] }[] = [
   { action: 'Rebalanced {strategy} position', type: 'rebalance' },
   { action: 'Credit utilization at {util}% — within target', type: 'check' },
   { action: 'Reserve topped up by ${amount}', type: 'allocation' },
+  { action: 'Agent {agent} requested unsecured loan of ${amount} USDC', type: 'loan' },
+  { action: 'Agent {agent} repaid loan + ${fee} USDC fee', type: 'payment' },
+  { action: 'CRITICAL: Agent {agent} slashed. Reputation reset to 0.', type: 'slash' },
 ];
 
 /** Generate a time string for the current sim time */
@@ -240,7 +243,57 @@ export function simulateTick(
     }
   }
 
-  // ── 8. Uptime ──
+  // ── 8. Agentic Economy Simulation ──
+  if (tickCount % 4 === 0 && config.logGeneration) {
+    const agents = state.agentRegistry;
+    const activeAgents = agents.filter(a => a.status === 'active');
+    
+    if (activeAgents.length > 0) {
+      const luckyAgent = activeAgents[tickCount % activeAgents.length];
+      const isSlash = tickCount % 48 === 0 && luckyAgent.score < 500; // Slash bad agents
+      const isRepay = tickCount % 6 === 0;
+      const isBorrow = tickCount % 8 === 0;
+
+      let action = '';
+      let type: AgentLogEntry['type'] = 'loan';
+
+      if (isSlash) {
+        action = `CRITICAL: Agent ${luckyAgent.name} slashed. Reputation reset to 0. Penalty: 50% interest.`;
+        type = 'slash';
+        updates.agentRegistry = agents.map(a => a.id === luckyAgent.id ? { ...a, status: 'slashed', score: 0, interestRate: 50, lastAction: 'SLASHED' } : a);
+      } else if (isRepay) {
+        const fee = 0.001;
+        action = `Agent ${luckyAgent.name} repaid loan + $${fee} USDC fee`;
+        type = 'payment';
+        updates.protocolRevenue = (state.protocolRevenue || 0) + fee;
+        updates.agentRegistry = agents.map(a => a.id === luckyAgent.id ? { ...a, score: Math.min(1000, a.score + 5), lastAction: 'Repaid Loan' } : a);
+      } else if (isBorrow) {
+        const amount = parseFloat((Math.random() * 50 + 10).toFixed(2));
+        action = `Agent ${luckyAgent.name} borrowed ${amount} USDC (Reputation: ${luckyAgent.score})`;
+        type = 'loan';
+        updates.txVolume24h = (state.txVolume24h || 0) + amount;
+        updates.agentRegistry = agents.map(a => a.id === luckyAgent.id ? { ...a, lastAction: `Borrowed ${amount} USDC` } : a);
+      }
+
+      // Calculate Real-time Velocity: (Revenue / TVL) * Factor
+      if (state.protocolTVL > 0) {
+        const dailyRevenue = (state.protocolRevenue || 0) * (86400 / config.simulatedSecondsPerTick); // Extrapolate to daily
+        updates.capitalVelocity = Math.min(50, (dailyRevenue / (state.protocolTVL * 0.001)) * 0.1); 
+      }
+
+      if (action) {
+        const newEntry: AgentLogEntry = {
+          time: simTimeString(tickCount),
+          action,
+          type,
+        };
+        const currentLog = (updates.agentLog as AgentLogEntry[]) || state.agentLog;
+        updates.agentLog = [newEntry, ...currentLog.slice(0, 19)];
+      }
+    }
+  }
+
+  // ── 9. Uptime ──
   const totalSimSeconds = tickCount * config.simulatedSecondsPerTick;
   const simDays = Math.floor(totalSimSeconds / 86400);
   const simHours = Math.floor((totalSimSeconds % 86400) / 3600);

@@ -1,134 +1,195 @@
 import './treasury.css';
-import { useStore, formatUSD, formatPercent } from '../../state/store';
+import { useStore, formatUSD, formatCompact } from '../../state/store';
 import { useRightRail } from '../../layouts/AppShell';
-import { Panel } from '../../components/panel/Panel';
-import { MetricDisplay } from '../../components/metric-display/MetricDisplay';
-import { DataTable } from '../../components/data-table/DataTable';
-import { MiniChart, ProgressBar } from '../../components/mini-chart/MiniChart';
-import { AllocationBar } from '../../components/allocation-bar/AllocationBar';
-import { StatusBadge } from '../../components/status-badge/StatusBadge';
 import { LiveValue } from '../../components/live-value/LiveValue';
-import { LeverageSlider } from '../../components/leverage/LeverageSlider';
 import { useWallet } from '../../state/wallet';
+import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import addresses from '../../config/contractAddresses.json';
 import abis from '../../config/contractABIs.json';
-import { useState } from 'react';
 
 export function Treasury() {
   const s = useStore();
+  const [pulse, setPulse] = useState(false);
+
+  // Simulation of terminal pulse
+  useEffect(() => {
+    const int = setInterval(() => setPulse(p => !p), 2000);
+    return () => clearInterval(int);
+  }, []);
+
+  useRightRail(<EconomyRail />, [s.capitalVelocity, s.protocolRevenue]);
+
+  return (
+    <div className="economy-terminal">
+      {/* Terminal Title Bar */}
+      <div className="terminal-header animate-fade-in-up">
+        <div className="terminal-dot" />
+        <h1 className="terminal-title">YIELDRA ECONOMY CORE // LIVE ACTION MONITOR</h1>
+        <div className="terminal-status">
+          <span className={pulse ? 'pulse-on' : 'pulse-off'}>●</span>
+          SYNCING ARC L1
+        </div>
+      </div>
+
+      {/* Top Grid: Pulse Metrics */}
+      <div className="economy-grid animate-fade-in-up stagger-1">
+        <div className="terminal-card terminal-card--glow">
+          <div className="terminal-card__label">CAPITAL VELOCITY</div>
+          <div className="terminal-card__value">
+            {s.capitalVelocity?.toFixed(1) || '0.0'}x
+            <span className="terminal-card__sub">DAILY CIRCULATION</span>
+          </div>
+        </div>
+        <div className="terminal-card">
+          <div className="terminal-card__label">TX VOLUME 24H</div>
+          <div className="terminal-card__value">
+            {formatCompact(s.txVolume24h || 0)}
+            <span className="terminal-card__sub">USDC PROCESSED</span>
+          </div>
+        </div>
+        <div className="terminal-card">
+          <div className="terminal-card__label">CUMULATIVE NANO DEBT</div>
+          <div className="terminal-card__value" style={{ color: 'var(--accent)' }}>
+            {formatUSD(s.protocolTotalBorrowed)}
+            <span className="terminal-card__sub">INSTITUTIONAL LEVERAGE</span>
+          </div>
+        </div>
+      </div>
+
+      {/* The Formula Lab */}
+      <div className="formula-lab animate-fade-in-up stagger-2">
+        <div className="formula-box">
+          <div className="formula-header">
+            <span className="formula-tag">MATH ENGINE</span>
+            <h2>UTILITY YIELD FORMULA</h2>
+          </div>
+          <div className="formula-display">
+            <div className="formula-part">
+              <span className="formula-val">{formatCompact(s.txVolume24h / 100)}</span>
+              <span className="formula-lbl">TXs</span>
+            </div>
+            <div className="formula-op">×</div>
+            <div className="formula-part">
+              <span className="formula-val">$0.001</span>
+              <span className="formula-lbl">FEE</span>
+            </div>
+            <div className="formula-op">×</div>
+            <div className="formula-part">
+              <span className="formula-val">{s.capitalVelocity.toFixed(1)}</span>
+              <span className="formula-lbl">VELOCITY</span>
+            </div>
+            <div className="formula-eq">=</div>
+            <div className="formula-result">
+              <span className="formula-val">{s.activeYieldAPY}%</span>
+              <span className="formula-lbl">CURRENT APY</span>
+            </div>
+          </div>
+          <div className="formula-footer">
+            Dynamic yield generation driven by on-chain agent revenue injections. APY levels spike with transaction volume and decay during idle periods.
+          </div>
+        </div>
+      </div>
+
+      {/* Live Transaction Matrix */}
+      <div className="terminal-matrix animate-fade-in-up stagger-3">
+        <div className="matrix-header">
+          <span>SOURCE AGENT</span>
+          <span>ACTION TYPE</span>
+          <span>AMOUNT</span>
+          <span>FEE BPS</span>
+          <span>TIMESTAMP</span>
+        </div>
+        <div className="matrix-scroll">
+          {s.agentLog.slice(0, 8).map((log, i) => (
+            <div key={i} className={`matrix-row matrix-row--${log.type}`}>
+               <div className="matrix-cell">AGENT 00{i+4}</div>
+               <div className="matrix-cell">{log.type?.toUpperCase()}</div>
+               <div className="matrix-cell">${(Math.random()*100).toFixed(2)}</div>
+               <div className="matrix-cell">1.0</div>
+               <div className="matrix-cell">{log.time}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EconomyRail() {
+  const s = useStore();
   const { wallet } = useWallet();
-  const [isBoosting, setIsBoosting] = useState(false);
+  const [injectAmount, setInjectAmount] = useState('1.0');
+  const [loading, setLoading] = useState(false);
 
-  const handleBoost = async (amount: number) => {
-    console.log("Leverage Boost triggered!", { amount, hasSigner: !!wallet.signer });
-    
-    if (!wallet.signer) {
-      alert("Please connect your wallet first!");
-      return;
-    }
-    
-    if (!amount || amount <= 0) {
-      alert("Invalid boost amount.");
-      return;
-    }
-
+  const handleInjectRevenue = async () => {
+    if (!wallet.signer || !injectAmount) return;
+    setLoading(true);
     try {
-      setIsBoosting(true);
       const creditContract = new ethers.Contract(addresses.ArcCreditManager, abis.ArcCreditManager, wallet.signer);
-      
-      const parsedAmount = ethers.parseUnits(amount.toFixed(6), 6);
-      console.log("Calling leverageBoost with:", parsedAmount.toString());
-      
-      const tx = await creditContract.leverageBoost(parsedAmount);
-      console.log("Transaction sent:", tx.hash);
-      
+      const usdcContract = new ethers.Contract(addresses.MockUSDC, abis.MockUSDC, wallet.signer);
+      const amount = ethers.parseUnits(injectAmount, 6);
+
+      // Approve & Inject
+      const approveTx = await usdcContract.approve(addresses.ArcCreditManager, amount);
+      await approveTx.wait();
+      const tx = await creditContract.injectProtocolRevenue(amount);
       await tx.wait();
-      console.log("Transaction confirmed!");
-      alert("Boost Successful! Your position has been multiplied.");
-    } catch (err: any) {
-      console.error("Leverage Boost failed", err);
-      alert(`Transaction Failed: ${err.reason || err.message || "Unknown error"}`);
+      
+      alert('YIELD ACCELERATED: Faucet revenue injected into the protocol.');
+    } catch (err) {
+      console.error(err);
     } finally {
-      setIsBoosting(false);
+      setLoading(false);
     }
   };
 
   return (
-    <>
-      {/* Header */}
-      <div className="screen-header animate-fade-in-up stagger-1">
-        <h1 className="screen-header__title">APY</h1>
-        <p className="screen-header__subtitle">Lock capital and farm yield strategies</p>
+    <div className="economy-rail animate-fade-in-up stagger-4">
+      {/* SIMULATOR CONSOLE */}
+      <div className="section-label">DEMO: YIELD ACCELERATOR</div>
+      <div className="sim-console">
+        <div className="sim-input-box">
+          <input 
+            type="number" 
+            value={injectAmount} 
+            onChange={(e) => setInjectAmount(e.target.value)}
+            className="sim-input"
+          />
+          <span className="sim-unit">USDC</span>
+        </div>
+        <button 
+          className="sim-btn" 
+          onClick={handleInjectRevenue}
+          disabled={loading}
+        >
+          {loading ? 'ACCELERATING...' : 'INJECT AGENT REVENUE'}
+        </button>
+        <p className="sim-hint">Simulate high-frequency agent traffic using faucet funds.</p>
       </div>
 
-      {/* Yield Metrics */}
-      <div className="treasury-equity animate-fade-in-up stagger-2">
-        <Panel variant="bordered">
-          <MetricDisplay label="Total Protocol TVL" value={<LiveValue value={formatUSD(s.protocolTVL)} />} variant="compact" />
-        </Panel>
-        <Panel variant="bordered">
-          <MetricDisplay label="Current Base APY" value={<span style={{ color: 'var(--status-success)' }}>5%</span>} variant="compact" />
-        </Panel>
-        <Panel variant="bordered">
-          <MetricDisplay label="Your Yield Earned" value={<LiveValue value={formatUSD(s.accumulatedYield)} />} variant="compact" />
-        </Panel>
+      <div className="section-label" style={{ marginTop: 'var(--space-6)' }}>Revenue Stream</div>
+      <div className="revenue-card">
+        <div className="revenue-val">{formatUSD(s.protocolRevenue)}</div>
+        <div className="revenue-lbl">TOTAL NANOPAYMENTS ACCRUED</div>
       </div>
 
-      {/* Strategy Marketplace */}
-      <div className="treasury-strategies animate-fade-in-up stagger-3" style={{ marginTop: 'var(--space-4)' }}>
-        <Panel variant="bordered" title="Yield Strategies">
-          <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)' }}>
-            Allocate your idle capital or credit line to strategies. Lock periods multiply your APY rewards.
-          </p>
-
-          <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
-            
-            <div style={{ border: '1px solid var(--border-subtle)', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text-primary)' }}>Arc Native Base Pool</h3>
-                <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary)', fontSize: '13px' }}>Default algorithmic yield. Instant withdrawal.</p>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ color: 'var(--status-success)', fontWeight: 'bold', fontSize: '18px' }}>5% APY</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>No Lock</div>
-              </div>
-            </div>
-
-          </div>
-
-        </Panel>
+      <div className="section-label" style={{ marginTop: 'var(--space-6)' }}>Network Load</div>
+      <div className="load-box">
+        <div className="load-header">
+          <span>UTILIZATION</span>
+          <span>{s.protocolUtilization.toFixed(1)}%</span>
+        </div>
+        <div className="load-bar">
+          <div className="load-bar-fill" style={{ width: `${s.protocolUtilization}%` }} />
+        </div>
       </div>
-
-      {/* Autonomous Leverage Section */}
-      <div className="treasury-leverage animate-fade-in-up stagger-4" style={{ marginTop: 'var(--space-4)' }}>
-        <Panel variant="bordered" title="Yield Booster Agent (AI Strategic Layer)">
-          <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)', fontSize: '14px' }}>
-            Allow the agent to autonomously borrow and reinvest to multiply your yields. Current strategy: **Leveraged Interest Rate Arbitrage**.
-          </p>
-          <LeverageSlider onBoost={handleBoost} isProcessing={isBoosting} />
-        </Panel>
-      </div>
-    </>
-  );
-}
-
-function TreasuryRail() {
-  return (
-    <>
-      <div className="animate-fade-in-up stagger-2">
-        <div className="section-label">How Locking Works</div>
-        <p className="rail-desc">
-          When you lock your collateral, you temporarily lose the ability to withdraw or use it to back your credit line, but in exchange, the APY yields are significantly multiplied.
-        </p>
-      </div>
-
-      <div className="animate-fade-in-up stagger-4" style={{ marginTop: 'var(--space-8)' }}>
-        <div className="section-label">Copy-Trade Mechanics</div>
-        <p className="rail-desc">
-          Social strategies allow you to allocate funds to an expert's vault. They take a small percentage fee (e.g. 2%) of the generated yield for managing the active trades.
-        </p>
-      </div>
-    </>
+      
+      <p className="rail-desc-mono" style={{ marginTop: '16px' }}>
+        PROTOCOL HEALTH: OPERATIONAL<br />
+        LATENCY: 12ms<br />
+        NET SETTLEMENT: BATCHED
+      </p>
+    </div>
   );
 }

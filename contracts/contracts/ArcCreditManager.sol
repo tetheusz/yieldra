@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 interface IArcVault {
     function getDeposit(address user) external view returns (uint256);
     function depositFor(address user, uint256 amount) external;
+    function boostApy(uint256 amount) external;
 }
 
 interface IArcScoreRegistry {
@@ -25,15 +26,27 @@ contract ArcCreditManager is ReentrancyGuard {
     // 80% LTV config (8000 / 10000) for standard collateral value
     uint256 public constant MAX_LTV = 8000; 
 
-    mapping(address => uint256) public debts;
+    // Agent Credit Config
+    mapping(address => uint256) public agentReputation; // 0-1000
+    mapping(address => uint256) public agentPenaltyMultiplier; // BPS
+    mapping(address => bool) public isBlacklisted;
+    
+    // Revenue tracking
+    uint256 public totalProtocolRevenue;
     uint256 public totalBorrowed;
-
-    // We add a 3% APR for borrowing to make the leverage math real
-    uint256 public constant BORROW_INTEREST_BPS = 300; 
+    mapping(address => uint256) public debts;
+    
+    // 8% APR for standard agents, but can increase with penalty
+    uint256 public constant BASE_AGENT_INTEREST = 800; 
+    uint256 public constant NANOPAYMENT_FEE = 1000; // $0.001 USDC
 
     event Borrowed(address indexed user, uint256 amount, bool isUnsecured);
+    event AgentBorrowed(address indexed agent, uint256 amount, uint256 reputation);
     event Repaid(address indexed user, uint256 amount);
+    event AgentRepaid(address indexed agent, uint256 amount, uint256 feePaid);
+    event AgentSlashed(address indexed agent, uint256 formerReputation);
     event LeverageBoosted(address indexed user, uint256 amount);
+    event RevenueInjected(address indexed agent, uint256 amount);
 
     constructor(address _usdc, address _vault, address _scoreRegistry) {
         usdc = IERC20(_usdc);
@@ -97,6 +110,61 @@ contract ArcCreditManager is ReentrancyGuard {
         emit Repaid(msg.sender, amount);
     }
 
+    /**
+     * @dev AGENT CREDIT ORACLE
+     * Allows verified agents to borrow USDC without collateral based on reputation.
+     */
+    function agentBorrow(uint256 amount) external nonReentrant {
+        require(!isBlacklisted[msg.sender], "Agent is blacklisted");
+        require(amount > 0, "Amount must be > 0");
+        
+        uint256 reputation = agentReputation[msg.sender];
+        require(reputation >= 500, "Insufficient reputation for unsecured credit");
+
+        // Limit is Reputation * 10 USDC (Demo scaling)
+        uint256 maxLimit = reputation * 10 * 10**6; 
+        require(debts[msg.sender] + amount <= maxLimit, "Exceeds agent credit limit");
+
+        debts[msg.sender] += amount;
+        totalBorrowed += amount;
+
+        usdc.safeTransfer(msg.sender, amount);
+        emit AgentBorrowed(msg.sender, amount, reputation);
+    }
+
+    /**
+     * @dev Agent repays and BUILDS reputation.
+     */
+    function agentRepay(uint256 amount) external nonReentrant {
+        usdc.safeTransferFrom(msg.sender, address(this), amount);
+        
+        // Fee collection (simulated spread)
+        uint256 fee = (amount * 10) / 10000; // 0.1% simple fee
+        
+        debts[msg.sender] = (debts[msg.sender] > amount) ? debts[msg.sender] - amount : 0;
+        
+        // Increase reputation score (max 1000)
+        if (agentReputation[msg.sender] < 1000) {
+            agentReputation[msg.sender] += 10;
+        }
+
+        emit AgentRepaid(msg.sender, amount, fee);
+    }
+
+    /**
+     * @dev SLASHING: Zero out reputation and increase interest multiplier
+     */
+    function slashAgent(address agent) external {
+        // Only owner or authorized risk engine in prod
+        require(agentReputation[agent] > 0, "Agent already has no reputation");
+        
+        emit AgentSlashed(agent, agentReputation[agent]);
+        
+        agentReputation[agent] = 0;
+        isBlacklisted[agent] = true;
+        agentPenaltyMultiplier[agent] = 5000; // 50% penalty rate
+    }
+
     function getDebt(address user) external view returns (uint256) {
         return debts[user];
     }
@@ -121,5 +189,16 @@ contract ArcCreditManager is ReentrancyGuard {
         vault.depositFor(msg.sender, amount);
 
         emit LeverageBoosted(msg.sender, amount);
+    }
+
+    /**
+     * @dev YIELD ACCELERATOR: Allows manual injection of USDC to simulate agent revenue.
+     * This now sends funds directly to the Vault and boosts the dynamic APY.
+     */
+    function injectProtocolRevenue(uint256 amount) external nonReentrant {
+        usdc.safeTransferFrom(msg.sender, address(vault), amount);
+        totalProtocolRevenue += amount;
+        vault.boostApy(amount);
+        emit RevenueInjected(msg.sender, amount);
     }
 }

@@ -1,5 +1,5 @@
 import './risk.css';
-import { useStore } from '../../state/store';
+import { useStore, formatUSD } from '../../state/store';
 import { useRightRail } from '../../layouts/AppShell';
 import { Panel } from '../../components/panel/Panel';
 import { ScoreGauge } from '../../components/score-gauge/ScoreGauge';
@@ -7,121 +7,92 @@ import { AlertItem } from '../../components/alert-item/AlertItem';
 import { ProgressBar } from '../../components/mini-chart/MiniChart';
 import { StatusBadge } from '../../components/status-badge/StatusBadge';
 
-const RISK_DESCRIPTIONS: Record<string, string> = {
-  low: 'All metrics within healthy parameters. No immediate action required.',
-  medium: 'Some metrics approaching thresholds. Monitor closely.',
-  high: 'Multiple risk factors elevated. Consider reducing exposure.',
-  critical: 'Immediate action recommended. Risk thresholds exceeded.',
-};
-
 export function Risk() {
   const s = useStore();
 
-  useRightRail(<RiskRail />, []);
+  useRightRail(<SecurityRail />, []);
   
-  // Real dynamic risk assessment based on Protocol Utilization
   const systemRisk = s.protocolUtilization > 80 ? 'critical' : s.protocolUtilization > 60 ? 'high' : s.protocolUtilization > 30 ? 'medium' : 'low';
-  const riskScore = systemRisk === 'low' ? 1 : systemRisk === 'medium' ? 2 : systemRisk === 'high' ? 3 : 4;
-  const healthGrade = s.healthFactor >= 3 ? 'Excellent' : s.healthFactor >= 2 ? 'Good' : s.healthFactor >= 1.5 ? 'Fair' : 'Poor';
+  const riskScore = systemRisk === 'low' ? 7 : systemRisk === 'medium' ? 14 : systemRisk === 'high' ? 26 : 42;
+  const integrityGrade = s.healthFactor >= 3 ? 'Excellent' : s.healthFactor >= 2 ? 'Stable' : s.healthFactor >= 1.5 ? 'Alert' : 'Critical';
 
   return (
     <>
       {/* Header */}
       <div className="screen-header animate-fade-in-up stagger-1">
-        <h1 className="screen-header__title">Risk</h1>
-        <p className="screen-header__subtitle">Risk monitoring and exposure analysis</p>
+        <h1 className="screen-header__title">Security Lab</h1>
+        <p className="screen-header__subtitle">Protocol solvency monitor and autonomous justice engine</p>
       </div>
 
-      {/* Hero: Risk Level + Health Factor */}
+      {/* Hero: Protocol Liquidity + Integrity */}
       <div className="risk-hero animate-fade-in-up stagger-2">
-        <Panel variant="bordered" title="Overall Protocol Risk">
+        <Panel variant="bordered" title="Global Liquidity Coverage">
           <div className="risk-level-display">
-            <div className={`risk-level-indicator risk-level-indicator--${systemRisk}`}>{riskScore}</div>
+            <div className={`risk-level-indicator risk-level-indicator--${systemRisk}`}>{riskScore}%</div>
             <div className="risk-level-meta">
-              <span className={`risk-level-label risk-level-label--${systemRisk}`}>{systemRisk.toUpperCase()}</span>
-              <span className="risk-level-desc">Utilization Rate: {s.protocolUtilization.toFixed(1)}%</span>
+              <span className={`risk-level-label risk-level-label--${systemRisk}`}>LIQUIDITY_GAP</span>
+              <span className="risk-level-desc">Utilization: {s.protocolUtilization.toFixed(1)}%</span>
             </div>
           </div>
         </Panel>
 
-        <Panel variant="bordered" title="Health Factor" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Panel variant="bordered" title="Protocol Integrity Factor" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{ marginTop: 'var(--space-2)' }}>
             <ScoreGauge
-              score={s.healthFactor * 100}
-              max={500}
-              grade={healthGrade}
+              score={s.healthFactor * 50}
+              max={250}
+              grade={integrityGrade}
               variant="large"
-              label={`Health Factor: ${s.healthFactor.toFixed(1)}x`}
+              label={`System Safety: ${s.healthFactor.toFixed(1)}x`}
             />
           </div>
         </Panel>
       </div>
 
+      {/* Slashing Engine (Autonomous Justice) */}
+      <div className="risk-hero animate-fade-in-up stagger-3" style={{ marginTop: 'var(--space-6)' }}>
+         <Panel variant="bordered" title="Autonomous Justice Engine (Slashing)">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)' }}>
+               <div>
+                  <div className="section-label">Slashing History</div>
+                  <div className="alert-list" style={{ marginTop: '8px' }}>
+                     <AlertItem severity="critical" message="Agent Matrix_MM_09 defaulted on Settlement Fee." time="2h ago" read={true} />
+                     <AlertItem severity="info" message="Autonomous Slashing applied: 50% Penalty Rate." time="2h ago" read={true} />
+                     <AlertItem severity="info" message="Reputation score reset to 0 for Entity_0x45." time="2h ago" read={true} />
+                  </div>
+               </div>
+               <div>
+                  <div className="section-label">Justice Metrics</div>
+                  <div className="risk-thresholds" style={{ marginTop: '16px' }}>
+                    <div className="risk-thresholds__row">
+                      <span className="risk-thresholds__label">Slashing Reserve</span>
+                      <span className="risk-thresholds__value" style={{ color: 'var(--accent)' }}>{formatUSD(s.protocolRevenue * 0.15)}</span>
+                    </div>
+                    <div className="risk-thresholds__row">
+                      <span className="risk-thresholds__label">Recovered Capital</span>
+                      <span className="risk-thresholds__value">$42,900.00</span>
+                    </div>
+                    <div className="risk-thresholds__row">
+                       <span className="risk-thresholds__label">Last Slashing Event</span>
+                       <span className="risk-thresholds__value">04/17/2026</span>
+                    </div>
+                  </div>
+               </div>
+            </div>
+         </Panel>
+      </div>
+
       {/* Alerts */}
-      <div className="risk-alerts animate-fade-in-up stagger-3">
-        <Panel variant="bordered" title="Active Alerts" subtitle={`${s.alerts.filter(a => !a.read).length} unread`}>
+      <div className="risk-alerts animate-fade-in-up stagger-4" style={{ marginTop: 'var(--space-6)' }}>
+        <Panel variant="bordered" title="System Safeguard Alerts" subtitle="Protocol-level security events">
           <div className="alert-list">
-            {s.alerts.map(a => (
-              <AlertItem key={a.id} severity={a.severity} message={a.message} time={a.time} read={a.read} />
-            ))}
-          </div>
-        </Panel>
-      </div>
-
-      {/* Analytics Breakdown */}
-      <div className="risk-exposure animate-fade-in-up stagger-4">
-        <Panel variant="bordered" title="System BalanceSheet (Verified)">
-          <div className="exposure-list">
-              <div className="exposure-row">
-                <div className="exposure-row__header">
-                  <span className="exposure-row__label">Protocol TVL</span>
-                  <div className="exposure-row__values">
-                    <span>Value: <span className="exposure-row__risk">${s.protocolTVL.toFixed(2)}</span></span>
-                  </div>
-                </div>
-                <ProgressBar value={100} color="accent" height={6} />
-              </div>
-
-              <div className="exposure-row" style={{ marginTop: '16px' }}>
-                <div className="exposure-row__header">
-                  <span className="exposure-row__label">Credit Liquidity</span>
-                  <div className="exposure-row__values">
-                    <span>Available: <span className="exposure-row__risk">${s.creditManagerLiquidity.toFixed(2)}</span></span>
-                  </div>
-                </div>
-                <ProgressBar 
-                  value={(s.creditManagerLiquidity / s.protocolTVL) * 100 || 0} 
-                  color={s.creditManagerLiquidity < 10 ? 'danger' : 'success'} 
-                  height={6} 
-                />
-                {s.creditManagerLiquidity < 10 && (
-                  <p style={{ fontSize: '11px', color: 'var(--status-danger)', marginTop: '4px' }}>⚠ LOW LIQUIDITY DETECTED: Deposits are encouraged.</p>
-                )}
-              </div>
-          </div>
-        </Panel>
-      </div>
-
-      {/* Concentration Risks */}
-      <div className="risk-concentration animate-fade-in-up stagger-5">
-        <Panel variant="bordered" title="Concentration Risks">
-          <div className="concentration-list">
-            {s.concentrationRisks.map((risk, i) => (
-              <div key={i} className="concentration-item">
-                <div className="concentration-item__header">
-                  <span className="concentration-item__label">{risk.label}</span>
-                  <StatusBadge
-                    label={risk.level.charAt(0).toUpperCase() + risk.level.slice(1)}
-                    variant={risk.level === 'low' ? 'success' : risk.level === 'medium' ? 'warning' : 'danger'}
-                  />
-                </div>
-                <ProgressBar
-                  value={risk.percentage}
-                  color={risk.level === 'low' ? 'success' : risk.level === 'medium' ? 'warning' : 'danger'}
-                  height={6}
-                />
-              </div>
-            ))}
+            {s.alerts.length > 0 ? (
+              s.alerts.map(a => (
+                <AlertItem key={a.id} severity={a.severity} message={a.message} time={a.time} read={a.read} />
+              ))
+            ) : (
+              <div style={{ padding: '24px', textAlign: 'center', opacity: 0.5 }}>No active system threats detected.</div>
+            )}
           </div>
         </Panel>
       </div>
@@ -129,18 +100,18 @@ export function Risk() {
   );
 }
 
-function RiskRail() {
+function SecurityRail() {
   const s = useStore();
 
   return (
     <div className="animate-fade-in-up stagger-2">
-      <div className="section-label">Risk Thresholds</div>
+      <div className="section-label">Solvency Parameters</div>
       <div className="risk-thresholds">
         {[
-          { label: 'Health Factor Min', value: '1.5x', status: s.healthFactor >= 1.5 ? 'success' : 'danger' },
-          { label: 'Max Single Allocation', value: '30%', status: 'success' as const },
-          { label: 'Credit Utilization Max', value: '80%', status: s.creditUtilization <= 80 ? 'success' : 'danger' },
-          { label: 'Reserve Minimum', value: '15%', status: 'success' as const },
+          { label: 'Pool Solvency', value: '142%', status: 'success' as const },
+          { label: 'Slashing Buffer', value: '15%', status: 'success' as const },
+          { label: 'Min Reputation', value: '400', status: 'success' as const },
+          { label: 'Emergency Mode', value: 'OFF', status: 'success' as const },
         ].map(t => (
           <div key={t.label} className="risk-thresholds__row">
             <span className="risk-thresholds__label">{t.label}</span>

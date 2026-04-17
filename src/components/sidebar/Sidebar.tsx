@@ -9,25 +9,18 @@ interface SidebarProps {
 
 const NAV_SECTIONS = [
   {
-    section: 'Dashboard',
+    section: 'Intelligence',
     items: [
       { label: 'Overview', route: '/overview', icon: <GridIcon /> },
       { label: 'Vault', route: '/credit', icon: <VaultIcon /> },
-      { label: 'APY', route: '/treasury', icon: <TreasuryIcon /> },
+      { label: 'Economy', route: '/treasury', icon: <EconomyIcon /> },
     ]
   },
   {
-    section: 'Automation',
+    section: 'Surveillance',
     items: [
-      { label: 'Autopilot', route: '/autopilot', icon: <AutopilotIcon /> },
-      { label: 'Risk', route: '/risk', icon: <RiskIcon /> },
-    ]
-  },
-  {
-    section: 'Account',
-    items: [
-      { label: 'Activity', route: '/activity', icon: <ActivityIcon /> },
-      { label: 'Settings', route: '/settings', icon: <SettingsIcon /> },
+      { label: 'Neural Link', route: '/autopilot', icon: <AutopilotIcon /> },
+      { label: 'Security Lab', route: '/risk', icon: <RiskIcon /> },
     ]
   }
 ];
@@ -142,12 +135,12 @@ function VaultIcon() {
   );
 }
 
-function TreasuryIcon() {
+function EconomyIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="3" y="7" width="14" height="10" rx="1.5"/>
-      <path d="M6 7V5a4 4 0 018 0v2"/>
-      <circle cx="10" cy="12" r="1.5"/>
+      <path d="M3 5h14M3 9h14M3 13h14M3 17h14" strokeOpacity="0.3"/>
+      <rect x="5" y="3" width="10" height="14" rx="1"/>
+      <path d="M7 7h6M7 10h4M7 13h2" stroke="var(--accent)"/>
     </svg>
   );
 }

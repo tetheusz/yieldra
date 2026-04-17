@@ -29,7 +29,16 @@ export interface RepaymentRecord {
 export interface AgentLogEntry {
   time: string;
   action: string;
-  type: 'rebalance' | 'payment' | 'harvest' | 'check' | 'snapshot' | 'allocation';
+  type: 'rebalance' | 'payment' | 'harvest' | 'check' | 'snapshot' | 'allocation' | 'slash' | 'loan';
+}
+
+export interface AgentReputation {
+  id: string;
+  name: string;
+  score: number;
+  status: 'active' | 'slashed' | 'blacklisted';
+  interestRate: number;
+  lastAction: string;
 }
 
 export interface Alert {
@@ -128,7 +137,12 @@ export interface AppState {
   protocolTVL: number;
   protocolTotalBorrowed: number;
   protocolUtilization: number;
+  protocolRevenue: number;
+  capitalVelocity: number;
+  txVolume24h: number;
+  avgNanopaymentFee: number;
   creditManagerLiquidity: number;
+  agentRegistry: AgentReputation[];
 }
 
 // ── Format utilities ──
@@ -225,7 +239,17 @@ const initialEmptyState: AppState = {
   protocolTVL: 0,
   protocolTotalBorrowed: 0,
   protocolUtilization: 0,
+  protocolRevenue: 0,
+  capitalVelocity: 0,
+  txVolume24h: 0,
+  avgNanopaymentFee: 0.001,
   creditManagerLiquidity: 0,
+  agentRegistry: [
+    { id: '1', name: 'OpenAI_Settler', score: 980, status: 'active', interestRate: 8.5, lastAction: 'Idle' },
+    { id: '2', name: 'Matrix_MM', score: 920, status: 'active', interestRate: 9.0, lastAction: 'Idle' },
+    { id: '3', name: 'Bittensor_Node', score: 850, status: 'active', interestRate: 9.5, lastAction: 'Idle' },
+    { id: '4', name: 'Anthropic_Agent', score: 400, status: 'active', interestRate: 12.0, lastAction: 'Idle' },
+  ],
 };
 
 // ── Populated State (Triggered after physical deposit completion) ──
@@ -255,7 +279,9 @@ export const mockPopulatedState: Partial<AppState> = {
   protocolTVL: 0,
   protocolTotalBorrowed: 0,
   protocolUtilization: 0,
+  protocolRevenue: 0,
   creditManagerLiquidity: 0,
+  agentRegistry: [],
 };
 
 // ── Context ──
@@ -297,6 +323,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const debtWei = await creditContract.getDebt(wallet.address);
         const limitWei = await creditContract.getAvailableCreditLimit(wallet.address);
         const scoreWei = await scoreContract.getScore(wallet.address);
+        const apyBps = await vaultContract.getCurrentApy();
+        const totalRevenueWei = await creditContract.totalProtocolRevenue();
+        const apyNum = Number(apyBps) / 100;
 
         // Fetch Global Protocol Stats
         const globalTVLWei = await vaultContract.totalPrincipal();
@@ -308,24 +337,28 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const globalTVLNum = parseFloat(ethers.formatUnits(globalTVLWei, 6));
         const globalBorrowedNum = parseFloat(ethers.formatUnits(globalBorrowedWei, 6));
         const cmLiquidityNum = parseFloat(ethers.formatUnits(cmLiquidityWei, 6));
+        const totalRevenueNum = parseFloat(ethers.formatUnits(totalRevenueWei, 6));
         const utilizationRate = globalTVLNum > 0 ? (globalBorrowedNum / globalTVLNum) * 100 : 0;
 
-        // Fetch Real Action Logs (Last 10 Borrowed/Repaid/Deposited events)
-        const borrowFilter = creditContract.filters.Borrowed(wallet.address);
-        const repayFilter = creditContract.filters.Repaid(wallet.address);
-        const depositFilter = vaultContract.filters.Deposited(wallet.address);
+        // Fetch Global Action Logs (Last 10 Borrowed/Repaid/Deposited/Revenue events)
+        const borrowFilter = creditContract.filters.Borrowed();
+        const repayFilter = creditContract.filters.Repaid();
+        const depositFilter = vaultContract.filters.Deposited();
+        const revenueFilter = creditContract.filters.RevenueInjected();
 
-        const [bLogs, rLogs, dLogs] = await Promise.all([
+        const [bLogs, rLogs, dLogs, revLogs] = await Promise.all([
           creditContract.queryFilter(borrowFilter, -5000),
           creditContract.queryFilter(repayFilter, -5000),
           vaultContract.queryFilter(depositFilter, -5000),
+          creditContract.queryFilter(revenueFilter, -5000),
         ]);
 
         const allLogs: AgentLogEntry[] = [
-          ...bLogs.map(l => ({ time: 'Recently', action: `Borrowed ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'allocation' as const })),
-          ...rLogs.map(l => ({ time: 'Recently', action: `Repaid ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
-          ...dLogs.map(l => ({ time: 'Recently', action: `Deposited ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'harvest' as const })),
-        ].sort((a, b) => 0).slice(0, 10); // Simple slice for now
+          ...bLogs.map(l => ({ time: 'Recently', action: `AGENT_LOAN: Disbursed ${ethers.formatUnits((l as any).args.amount, 6)} USDC to ${(l as any).args.user.slice(0, 6)}`, type: 'allocation' as const })),
+          ...rLogs.map(l => ({ time: 'Recently', action: `CAPITAL_RECOVERY: Agent repaid ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
+          ...dLogs.map(l => ({ time: 'Recently', action: `TVL_UPDATE: Liquidity Injection ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'harvest' as const })),
+          ...revLogs.map(l => ({ time: 'Recently', action: `REVENUE_INGESTION: Protocol earned ${ethers.formatUnits((l as any).args.amount, 6)} USDC`, type: 'payment' as const })),
+        ].sort((a, b) => bLogs.indexOf(b as any) - bLogs.indexOf(a as any)).slice(0, 15);
 
         // Fetch Agent ID (ERC-8004) from Identity Registry
         let detectedAgentId = state.agentId;
@@ -359,9 +392,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           availableCredit: limitNum - debtNum > 0 ? limitNum - debtNum : 0,
           scoreGrade: scoreNum > 800 ? 'A+' : scoreNum > 600 ? 'B' : 'C',
           agentId: detectedAgentId,
+          activeYieldAPY: apyNum,
           protocolTVL: globalTVLNum,
           protocolTotalBorrowed: globalBorrowedNum,
           protocolUtilization: utilizationRate,
+          protocolRevenue: totalRevenueNum,
           creditManagerLiquidity: cmLiquidityNum,
           agentLog: allLogs.length > 0 ? allLogs : prev.agentLog
         }));
@@ -379,7 +414,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       // but without warping the actual financial data
       const simUpdates = simulateTick(state, { ...DEFAULT_SIM_CONFIG, yieldAccrual: false, scoreFluctuation: false, logGeneration: false }, tickRef.current);
       setState(simUpdates);
-    }, 12000); // 12s Ethereum block time average
+    }, 5000); // 5s for high-frequency demo feedback
 
     return () => clearInterval(pollInterval);
   }, [state.hasDeposited, wallet.provider, wallet.address]);

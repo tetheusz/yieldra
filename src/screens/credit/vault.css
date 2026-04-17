@@ -5,6 +5,11 @@
   align-items: start;
 }
 
+.vault-left-col {
+  display: flex;
+  flex-direction: column;
+}
+
 .vault-action-panel {
   background: rgba(10, 15, 25, 0.7);
   backdrop-filter: blur(20px);
@@ -145,6 +150,36 @@
   padding: var(--space-6);
   background: radial-gradient(circle at center, rgba(0, 255, 255, 0.05), transparent);
   border-radius: 24px;
+  flex: 1;
+  min-height: 400px;
+}
+
+.lp-status-banner {
+  margin-top: var(--space-6);
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid rgba(0, 255, 136, 0.1);
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #00ff88;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  background: #00ff88;
+  border-radius: 50%;
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(0, 255, 136, 0); }
+  100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
 }
 
 .health-gauge-container {
@@ -199,4 +234,71 @@
   border-radius: 8px;
   margin-top: 8px;
   font-size: 13px;
+}
+
+/* Agent Registry Table */
+.agent-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-4);
+  font-size: 14px;
+}
+
+.agent-table th {
+  text-align: left;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.agent-table td {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  vertical-align: middle;
+}
+
+.cell--id { color: var(--text-tertiary); font-family: monospace; }
+.cell--name { font-weight: 700; color: #fff; }
+
+.cell--score {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.score-bar-bg {
+  width: 100px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.status--active { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.2); }
+.status--slashed { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.2); }
+.status--blacklisted { background: rgba(0, 0, 0, 0.3); color: var(--text-tertiary); border: 1px solid rgba(255, 255, 255, 0.1); }
+
+.row--slashed {
+  background: rgba(255, 77, 77, 0.03);
+}
+
+.cell--activity {
+  font-size: 12px;
+  color: var(--text-tertiary);
 }

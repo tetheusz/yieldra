@@ -54,11 +54,11 @@ export function Overview() {
           <MetricDisplay label="Available Credit" value={formatUSD(s.availableCredit)} variant="compact" />
         </Panel>
         <Panel variant="bordered">
-          <MetricDisplay label="Active Yield APY" value={<LiveValue value={`5%`} />} variant="compact" />
+          <MetricDisplay label="Current Protocol Yield" value={<LiveValue value={`${s.activeYieldAPY.toFixed(1)}%`} />} variant="compact" />
         </Panel>
         <Panel variant="bordered">
           <span className="overview-autopilot-label">
-            Official Agent
+            Assigned Neural Node
           </span>
           <div className="autopilot-mini">
             <span className="autopilot-mini__indicator" style={{ backgroundColor: s.agentId !== '0' ? 'var(--status-success)' : 'var(--text-tertiary)' }} />
