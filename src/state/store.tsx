@@ -351,7 +351,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const globalBorrowedNum = parseFloat(ethers.formatUnits(globalBorrowedWei, 6));
         const cmLiquidityNum = parseFloat(ethers.formatUnits(cmLiquidityWei, 6));
         const totalRevenueNum = parseFloat(ethers.formatUnits(totalRevenueWei, 6));
-        const utilizationRate = globalTVLNum > 0 ? (globalBorrowedNum / globalTVLNum) * 100 : 0;
+        
+        // GLOBAL TVL re-definition for Hackathon: Total Assets Under Management
+        // (Vault Collateral + CreditManager Liquidity + Assets currently out on loan)
+        const aggregatedTVL = globalTVLNum + cmLiquidityNum + globalBorrowedNum;
+        
+        // Capital Efficiency = (Assets Working / Total Assets)
+        const capitalEfficiencyNum = aggregatedTVL > 0 ? (globalBorrowedNum / aggregatedTVL) : 0;
+        
+        // Utilization = (Borrowed / Available Pool)
+        const poolCapacity = cmLiquidityNum + globalBorrowedNum;
+        const utilizationRate = poolCapacity > 0 ? (globalBorrowedNum / poolCapacity) * 100 : 0;
 
         // Fetch Global Action Logs (Limit range to avoid RPC timeouts on new chains)
         const blockRange = -2000; 
@@ -411,10 +421,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             scoreGrade: scoreNum > 800 ? 'A+' : scoreNum > 600 ? 'B' : 'C',
             agentId: detectedAgentId,
             activeYieldAPY: apyNum,
-            protocolTVL: globalTVLNum,
+            activeYieldAPY: apyNum,
+            protocolTVL: aggregatedTVL,
             protocolTotalBorrowed: globalBorrowedNum,
             protocolUtilization: utilizationRate,
             protocolRevenue: totalRevenueNum,
+            capitalVelocity: capitalEfficiencyNum,
             creditManagerLiquidity: cmLiquidityNum,
             agentLog: allLogs.length > 0 ? allLogs : prev.agentLog
           }));

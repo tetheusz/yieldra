@@ -21,6 +21,12 @@ async function main() {
   const addressesPath = path.join(__dirname, "../../src/config/contractAddresses.json");
   const addresses = JSON.parse(fs.readFileSync(addressesPath, "utf8"));
 
+  const USDC_ADDR = addresses.MockUSDC;
+  const CREDIT_MANAGER_ADDR = addresses.ArcCreditManager;
+
+  console.log("Target USDC:", USDC_ADDR);
+  console.log("Target CreditManager:", CREDIT_MANAGER_ADDR);
+
   const usdc = await ethers.getContractAt("IERC20", addresses.MockUSDC);
   const creditManager = await ethers.getContractAt("ArcCreditManager", addresses.ArcCreditManager);
 
@@ -28,6 +34,20 @@ async function main() {
   let txCount = 0;
 
   const agents = ["matrix-core", "neural-flow-01", "lambda-settler", "arb-sentinel", "vision-node"];
+
+  console.log("Checking permissions and balance...");
+  const allowance = await usdc.allowance(deployer.address, CREDIT_MANAGER_ADDR);
+  if (allowance < ethers.parseUnits("1000000", 6)) {
+    const tx = await usdc.approve(CREDIT_MANAGER_ADDR, ethers.MaxUint256);
+    await tx.wait();
+    console.log("✅ Main liquidity allowance granted.");
+  }
+
+  const walletBal = await usdc.balanceOf(deployer.address);
+  console.log("Agent Operator Balance:", ethers.formatUnits(walletBal, 6), "USDC");
+  if (walletBal == 0n) {
+    console.warn("⚠ WARNING: Bot operator has 0 USDC. Injections will fail.");
+  }
 
   while (true) {
     try {
