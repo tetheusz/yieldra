@@ -4,18 +4,18 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * 🦾 YIELDRA INTELLIGENT AGENT BOT (v2.0)
- * Simulates a full-loop agentic economy:
- * 1. BORROW: Agents take unsecured credit based on reputation.
- * 2. REPAY: Agents return principal + interest to the protocol.
- * 3. INJECT: Agents pay settlement fees (direct revenue).
+ * 🦾 YIELDRA: NANOPAYMENT & MULTI-STATE AGENT v2.2
+ * Optimized for the "Agentic Economy on Arc" Hackathon.
+ * - Handles sub-cent nanopayments (<= $0.01) [MANDATORY RULE]
+ * - Handles legacy/high-value settlements (up to $0.30)
+ * - Accelerated frequency to hit 50+ on-chain transactions fast.
  */
 
 async function main() {
   const [deployer] = await ethers.getSigners();
   console.log("==================================================");
-  console.log("🦾 YIELDRA: INTELLIGENT AGENT BOT v2.0 ACTIVE");
-  console.log("Operator:", deployer.address);
+  console.log("🦾 YIELDRA: NANOPAYMENT AGENT v2.2 ACTIVE");
+  console.log("Target: ARC Testnet (Official USDC)");
   console.log("==================================================");
 
   const addressesPath = path.join(__dirname, "../../src/config/contractAddresses.json");
@@ -24,16 +24,10 @@ async function main() {
   const usdc = await ethers.getContractAt("IERC20", addresses.MockUSDC);
   const creditManager = await ethers.getContractAt("ArcCreditManager", addresses.ArcCreditManager);
 
-  // Initial Approval for Revenue Injection and Repayments
-  console.log("Checking permissions...");
-  const allowance = await usdc.allowance(deployer.address, addresses.ArcCreditManager);
-  if (allowance < ethers.parseUnits("1000000", 6)) {
-    const tx = await usdc.approve(addresses.ArcCreditManager, ethers.MaxUint256);
-    await tx.wait();
-    console.log("✅ Main liquidity approval granted.");
-  }
+  // Stats to track our goals
+  let txCount = 0;
 
-  const agents = ["matrix-core", "neural-flow-01", "lambda-settler", "arb-sentinel"];
+  const agents = ["matrix-core", "neural-flow-01", "lambda-settler", "arb-sentinel", "vision-node"];
 
   while (true) {
     try {
@@ -44,47 +38,59 @@ async function main() {
       const currentDebt = await creditManager.getDebt(deployer.address);
       const debtNum = parseFloat(ethers.formatUnits(currentDebt, 6));
 
-      if (actionRoll < 0.4) {
-        // ACTION A: INJECT SETTLEMENT REVENUE (60% weight)
-        const rawAmount = (Math.random() * 0.15 + 0.05).toFixed(4);
+      if (actionRoll < 0.6) {
+        // ACTION A: SETTLEMENT REVENUE
+        // We want a mix: 80% Nanopayments (to win hackathon), 20% Legacy High Fees
+        const isNanopayment = Math.random() < 0.8;
+        let rawAmount;
+        
+        if (isNanopayment) {
+            // Range: $0.0001 to $0.0100 (Official Nanopayment)
+            rawAmount = (Math.random() * 0.0099 + 0.0001).toFixed(4);
+        } else {
+            // Range: $0.01 to $0.30 (Legacy Settlement)
+            rawAmount = (Math.random() * 0.29 + 0.01).toFixed(3);
+        }
+
         const amount = ethers.parseUnits(rawAmount, 6);
-        console.log(`[${new Date().toLocaleTimeString()}] 🤖 Agent ${agent}: settling fee: $${rawAmount} USDC`);
+        const tag = isNanopayment ? "[💎 NANOPAYMENT]" : "[🏢 LEGACY_FEE] ";
+        
+        console.log(`[${new Date().toLocaleTimeString()}] 🤖 ${tag} Agent ${agent} settling: $${rawAmount} USDC`);
         const tx = await creditManager.injectProtocolRevenue(amount);
         await tx.wait();
-        console.log(`   ✅ REVENUE INJECTED (TX: ${tx.hash.slice(0, 10)}...)`);
+        txCount++;
+        console.log(`   ✅ SETTLED (Count: ${txCount}/50) | TX: ${tx.hash.slice(0, 10)}...`);
 
-      } else if (actionRoll < 0.7) {
-        // ACTION B: BORROW (30% weight)
-        if (debtNum < 100) { // Limit bot debt for safety
+      } else if (actionRoll < 0.8) {
+        // ACTION B: BORROW
+        if (debtNum < 150) {
           const rawAmount = (Math.random() * 20 + 5).toFixed(2);
           const amount = ethers.parseUnits(rawAmount, 6);
-          console.log(`[${new Date().toLocaleTimeString()}] 📤 Agent ${agent}: Requesting Loan of $${rawAmount} USDC`);
+          console.log(`[${new Date().toLocaleTimeString()}] 📤 [AGENT_LOAN] Requesting $${rawAmount} USDC...`);
           const tx = await creditManager.borrow(amount);
           await tx.wait();
-          console.log(`   ✅ LOAN DISBURSED (TX: ${tx.hash.slice(0, 10)}...)`);
-        } else {
-          console.log(`[${new Date().toLocaleTimeString()}] ℹ️ Bot debt limit reached ($${debtNum}). Skipping borrow.`);
+          txCount++;
+          console.log(`   ✅ DISBURSED (Count: ${txCount}/50) | TX: ${tx.hash.slice(0, 10)}...`);
         }
 
       } else {
-        // ACTION C: REPAY (10% weight or if debt is high)
+        // ACTION C: REPAY
         if (debtNum > 0) {
           const rawAmount = (Math.random() * 10 + 2).toFixed(2);
           let amount = ethers.parseUnits(rawAmount, 6);
           if (amount > currentDebt) amount = currentDebt;
 
-          console.log(`[${new Date().toLocaleTimeString()}] 📥 Agent ${agent}: Repaying $${ethers.formatUnits(amount, 6)} USDC (Int+Prin)`);
+          console.log(`[${new Date().toLocaleTimeString()}] 📥 [CAPITAL_RECOVERY] Repaying $${ethers.formatUnits(amount, 6)} USDC...`);
           const tx = await creditManager.repay(amount);
           await tx.wait();
-          console.log(`   ✅ DEBT SETTLED (TX: ${tx.hash.slice(0, 10)}...)`);
-        } else {
-          console.log(`[${new Date().toLocaleTimeString()}] ℹ️ No debt to repay. Skipping.`);
+          txCount++;
+          console.log(`   ✅ REPAID (Count: ${txCount}/50) | TX: ${tx.hash.slice(0, 10)}...`);
         }
       }
 
-      // Interval: 10-15 minutes (Sustainability logic)
-      const waitTime = Math.floor(Math.random() * 300000) + 600000;
-      console.log(`   ⏳ Cool-down: ${Math.round(waitTime / 60000)} minutes...\n`);
+      // ACCELERATED MODE: 1-3 minutes to hit the 50 tx goal quickly
+      const waitTime = Math.floor(Math.random() * 120000) + 60000;
+      console.log(`   ⏳ Cooldown: ${Math.round(waitTime / 1000)}s...\n`);
       await new Promise(r => setTimeout(r, waitTime));
 
     } catch (err) {

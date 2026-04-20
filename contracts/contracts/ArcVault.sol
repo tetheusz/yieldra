@@ -142,4 +142,9 @@ contract ArcVault is ReentrancyGuard {
         require(msg.sender == owner, "Only owner");
         IERC20(token).safeTransfer(msg.sender, amount);
     }
+
+    /**
+     * @dev ARC NATIVE USDC: Allows the contract to receive native USDC.
+     */
+    receive() external payable {}
 }
