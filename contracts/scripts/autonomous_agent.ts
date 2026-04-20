@@ -108,9 +108,9 @@ async function main() {
         }
       }
 
-      // ACCELERATED MODE: 1-3 minutes to hit the 50 tx goal quickly
-      const waitTime = Math.floor(Math.random() * 120000) + 60000;
-      console.log(`   ⏳ Cooldown: ${Math.round(waitTime / 1000)}s...\n`);
+      // TURBO MODE: 10-30 seconds to create a constant heartbeat for the demo
+      const waitTime = Math.floor(Math.random() * 20000) + 10000;
+      console.log(`   ⚡ Turbo Cooldown: ${Math.round(waitTime / 1000)}s...\n`);
       await new Promise(r => setTimeout(r, waitTime));
 
     } catch (err) {
