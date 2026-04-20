@@ -34,8 +34,11 @@ export function Overview() {
       {/* Header */}
       <div className="screen-header animate-fade-in-up stagger-1" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="screen-header__title">Overview</h1>
-          <p className="screen-header__subtitle">Your autonomous account at a glance</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+             <h1 className="screen-header__title" style={{ margin: 0 }}>Overview</h1>
+             <div className="autopilot-mini__indicator" style={{ backgroundColor: 'var(--accent)', marginTop: '4px' }}></div>
+          </div>
+          <p className="screen-header__subtitle">Global Autonomous Engine State</p>
         </div>
       </div>
 
@@ -51,22 +54,25 @@ export function Overview() {
           />
         </Panel>
         <Panel variant="bordered">
-          <MetricDisplay label="Available Credit" value={formatUSD(s.availableCredit)} variant="compact" />
+          <MetricDisplay 
+            label="Protocol TVL" 
+            value={formatUSD(s.protocolTVL)} 
+            variant="compact" 
+          />
         </Panel>
         <Panel variant="bordered">
-          <MetricDisplay label="Current Protocol Yield" value={<LiveValue value={`${s.activeYieldAPY.toFixed(1)}%`} />} variant="compact" />
+          <MetricDisplay 
+            label="Capital Efficiency" 
+            value={<LiveValue value={`${s.capitalVelocity.toFixed(2)}x`} />} 
+            variant="compact" 
+          />
         </Panel>
         <Panel variant="bordered">
-          <span className="overview-autopilot-label">
-            Assigned Neural Node
-          </span>
-          <div className="autopilot-mini">
-            <span className="autopilot-mini__indicator" style={{ backgroundColor: s.agentId !== '0' ? 'var(--status-success)' : 'var(--text-tertiary)' }} />
-            <span className="autopilot-mini__label">{s.agentId !== '0' ? `ID #${s.agentId}` : 'Unregistered'}</span>
-          </div>
-          <span className="overview-autopilot-sub">
-            System: Connected
-          </span>
+          <MetricDisplay 
+            label="Global APY" 
+            value={<LiveValue value={`${s.activeYieldAPY.toFixed(1)}%`} />} 
+            variant="compact" 
+          />
         </Panel>
       </div>
 

@@ -4,75 +4,94 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * 🦾 YIELDRA AUTONOMOUS AGENT BOT
- * This script runs in the background and injects "Real Agent Revenue" 
- * into the protocol on the Arc Testnet.
+ * 🦾 YIELDRA INTELLIGENT AGENT BOT (v2.0)
+ * Simulates a full-loop agentic economy:
+ * 1. BORROW: Agents take unsecured credit based on reputation.
+ * 2. REPAY: Agents return principal + interest to the protocol.
+ * 3. INJECT: Agents pay settlement fees (direct revenue).
  */
 
 async function main() {
   const [deployer] = await ethers.getSigners();
   console.log("==================================================");
-  console.log("🦾 YIELDRA: AUTONOMOUS AGENT BOT INITIALIZED");
-  console.log("Account:", deployer.address);
+  console.log("🦾 YIELDRA: INTELLIGENT AGENT BOT v2.0 ACTIVE");
+  console.log("Operator:", deployer.address);
   console.log("==================================================");
 
-  // Read addresses dynamically from the project config
   const addressesPath = path.join(__dirname, "../../src/config/contractAddresses.json");
   const addresses = JSON.parse(fs.readFileSync(addressesPath, "utf8"));
 
-  const USDC_ADDR = addresses.MockUSDC;
-  const CREDIT_MANAGER_ADDR = addresses.ArcCreditManager;
+  const usdc = await ethers.getContractAt("IERC20", addresses.MockUSDC);
+  const creditManager = await ethers.getContractAt("ArcCreditManager", addresses.ArcCreditManager);
 
-  const usdc = await ethers.getContractAt("IERC20", USDC_ADDR);
-  const creditManager = await ethers.getContractAt("ArcCreditManager", CREDIT_MANAGER_ADDR);
-
-  console.log("Using CreditManager at:", CREDIT_MANAGER_ADDR);
-
-  console.log("Checking allowance...");
-  const allowance = await usdc.allowance(deployer.address, CREDIT_MANAGER_ADDR);
-  
+  // Initial Approval for Revenue Injection and Repayments
+  console.log("Checking permissions...");
+  const allowance = await usdc.allowance(deployer.address, addresses.ArcCreditManager);
   if (allowance < ethers.parseUnits("1000000", 6)) {
-    console.log("Approving CreditManager to spend USDC...");
-    const approveTx = await usdc.approve(CREDIT_MANAGER_ADDR, ethers.MaxUint256);
-    await approveTx.wait();
-    console.log("✅ Allowance established.");
-  } else {
-    console.log("✅ Allowance already sufficient.");
+    const tx = await usdc.approve(addresses.ArcCreditManager, ethers.MaxUint256);
+    await tx.wait();
+    console.log("✅ Main liquidity approval granted.");
   }
 
-  // AGENT LIST for logs
-  const agents = ["matrix-01", "neural-node-alpha", "lambda-9", "arc-arb-bot", "liquidity-sentinel"];
-
-  console.log("\n🚀 Autopilot Active. Simulating high-frequency agent traffic...");
+  const agents = ["matrix-core", "neural-flow-01", "lambda-settler", "arb-sentinel"];
 
   while (true) {
     try {
       const agent = agents[Math.floor(Math.random() * agents.length)];
+      const actionRoll = Math.random();
       
-      // Inject small realistic revenue (0.01 - 0.25 USDC)
-      const rawAmount = (Math.random() * 0.24 + 0.01).toFixed(3);
-      const amount = ethers.parseUnits(rawAmount, 6);
+      // Get current bot state
+      const currentDebt = await creditManager.getDebt(deployer.address);
+      const debtNum = parseFloat(ethers.formatUnits(currentDebt, 6));
 
-      console.log(`[${new Date().toLocaleTimeString()}] 🤖 Agent ${agent} settling settlement fee: $${rawAmount} USDC...`);
+      if (actionRoll < 0.4) {
+        // ACTION A: INJECT SETTLEMENT REVENUE (60% weight)
+        const rawAmount = (Math.random() * 0.15 + 0.05).toFixed(4);
+        const amount = ethers.parseUnits(rawAmount, 6);
+        console.log(`[${new Date().toLocaleTimeString()}] 🤖 Agent ${agent}: settling fee: $${rawAmount} USDC`);
+        const tx = await creditManager.injectProtocolRevenue(amount);
+        await tx.wait();
+        console.log(`   ✅ REVENUE INJECTED (TX: ${tx.hash.slice(0, 10)}...)`);
 
-      const tx = await creditManager.injectProtocolRevenue(amount);
-      await tx.wait();
+      } else if (actionRoll < 0.7) {
+        // ACTION B: BORROW (30% weight)
+        if (debtNum < 100) { // Limit bot debt for safety
+          const rawAmount = (Math.random() * 20 + 5).toFixed(2);
+          const amount = ethers.parseUnits(rawAmount, 6);
+          console.log(`[${new Date().toLocaleTimeString()}] 📤 Agent ${agent}: Requesting Loan of $${rawAmount} USDC`);
+          const tx = await creditManager.borrow(amount);
+          await tx.wait();
+          console.log(`   ✅ LOAN DISBURSED (TX: ${tx.hash.slice(0, 10)}...)`);
+        } else {
+          console.log(`[${new Date().toLocaleTimeString()}] ℹ️ Bot debt limit reached ($${debtNum}). Skipping borrow.`);
+        }
 
-      console.log(`   ✅ On-chain Settlement Success! TX: ${tx.hash}\n`);
+      } else {
+        // ACTION C: REPAY (10% weight or if debt is high)
+        if (debtNum > 0) {
+          const rawAmount = (Math.random() * 10 + 2).toFixed(2);
+          let amount = ethers.parseUnits(rawAmount, 6);
+          if (amount > currentDebt) amount = currentDebt;
 
-      // Wait 10-15 minutes before next injection to conserve faucet and make logs more realistic
-      const waitTime = Math.floor(Math.random() * 300000) + 600000; 
-      console.log(`   ⏳ Cooling down for ${Math.round(waitTime/60000)} minutes...`);
+          console.log(`[${new Date().toLocaleTimeString()}] 📥 Agent ${agent}: Repaying $${ethers.formatUnits(amount, 6)} USDC (Int+Prin)`);
+          const tx = await creditManager.repay(amount);
+          await tx.wait();
+          console.log(`   ✅ DEBT SETTLED (TX: ${tx.hash.slice(0, 10)}...)`);
+        } else {
+          console.log(`[${new Date().toLocaleTimeString()}] ℹ️ No debt to repay. Skipping.`);
+        }
+      }
+
+      // Interval: 10-15 minutes (Sustainability logic)
+      const waitTime = Math.floor(Math.random() * 300000) + 600000;
+      console.log(`   ⏳ Cool-down: ${Math.round(waitTime / 60000)} minutes...\n`);
       await new Promise(r => setTimeout(r, waitTime));
 
     } catch (err) {
-      console.error("❌ Settlement Error:", err.message);
-      await new Promise(r => setTimeout(r, 5000)); // Cool down
+      console.error("❌ Agent error:", err.message);
+      await new Promise(r => setTimeout(r, 10000));
     }
   }
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main().catch(console.error);
